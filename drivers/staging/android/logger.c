@@ -49,14 +49,14 @@
  * mutex 'mutex'.
  */
 struct logger_log {
-	unsigned char		*buffer;
-	struct miscdevice	misc;
-	wait_queue_head_t	wq;
-	struct list_head	readers;
-	struct mutex		mutex;
-	size_t			w_off;
-	size_t			head;
-	size_t			size;
+	unsigned char		*buffer;/* the ring buffer itself */
+	struct miscdevice	misc;	/* misc device representing the log */
+	wait_queue_head_t	wq;	/* wait queue for readers */
+	struct list_head	readers; /* this log's readers */
+	struct mutex		mutex;	/* mutex protecting buffer */
+	size_t			w_off;	/* current write head offset */
+	size_t			head;	/* new readers start here */
+	size_t			size;	/* size of the log */
 	struct list_head	logs;
 };
 
