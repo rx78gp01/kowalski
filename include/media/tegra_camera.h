@@ -56,7 +56,9 @@ struct tegra_camera_platform_data {
 #if  defined(CONFIG_TEGRA_CAMERA)
 int is_tegra_camera_on(void);
 #else
+
 static inline int is_tegra_camera_on(void) { return 0; }
+
 #endif
 
 #define TEGRA_CAMERA_IOCTL_ENABLE		_IOWR('i', 1, uint)
