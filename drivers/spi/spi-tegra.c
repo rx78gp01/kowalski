@@ -1429,7 +1429,11 @@ static int __init spi_tegra_probe(struct platform_device *pdev)
 		tspi->parent_clk_list = pdata->parent_clk_list;
 		tspi->max_rate = pdata->max_rate;
 	} else {
+#if defined(CONFIG_MACH_STAR)
 		tspi->is_clkon_always = true;
+#else
+		tspi->is_clkon_always = false;
+#endif
 		tspi->is_dma_allowed = true;
 		tspi->dma_buf_size = DEFAULT_SPI_DMA_BUF_LEN;
 		tspi->parent_clk_count = 0;
