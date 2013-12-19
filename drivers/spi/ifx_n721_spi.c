@@ -166,6 +166,40 @@ struct tty_driver 	*ifx_spi_tty_driver;
 
 int spi_err_flag=0;
 
+#ifdef LGE_DUMP_SPI_BUFFER
+#define COL_SIZE 50
+static void dump_spi_buffer(const unsigned char *txt, const unsigned char *buf, int count)
+{
+	char dump_buf_str[COL_SIZE+1];
+
+	if (buf != NULL) 
+	{
+		int j = 0;
+		char *cur_str = dump_buf_str;
+		unsigned char ch;
+		while((j < COL_SIZE) && (j  < count))
+		{
+			ch = buf[j];
+			if ((ch < 32) || (ch > 126))
+			{
+				*cur_str = '.';
+			} else
+			{
+				*cur_str = ch;
+			}
+			cur_str++;
+			j++;
+		}
+		*cur_str = 0;
+		printk("%s:count:%d [%s]\n", txt, count, dump_buf_str);                        
+	}
+	else
+	{
+		printk("%s: buffer is NULL\n", txt);                 
+	}
+}
+#endif
+
 #ifdef IFX_SPI_DUMP_LOG
 void ifx_dump_atcmd(char *data) 
 {
@@ -210,6 +244,7 @@ void ifx_dump_atcmd(char *data)
 }
 #endif
 
+#ifdef LGE_DUMP_SPI_BUFFER
 #define COL_SIZE 20
 static void ifx_dump_spi_buffer(const unsigned char *txt, const unsigned char *buf, int count)
 {
@@ -245,6 +280,7 @@ static void ifx_dump_spi_buffer(const unsigned char *txt, const unsigned char *b
 
 	}
 }
+#endif
 
 
 /* ################################################################################################################ */
@@ -398,7 +434,9 @@ static int ifx_spi_write(struct tty_struct *tty, const unsigned char *buf, int c
 		IFX_SPI_PRINTK("ifx_master_initiated_transfer : %d, is_suspended : %d, tegra_suspend : %d",
 				spi_data->ifx_master_initiated_transfer,spi_data->is_suspended,spi_tegra_is_suspend(spi_data->spi));
 
+#ifdef LGE_DUMP_SPI_BUFFER		
 		ifx_dump_spi_buffer("ifx_spi_write -- fail()", buf, count);		
+#endif
 
 		init_completion(&spi_data->ifx_read_write_completion);
 
