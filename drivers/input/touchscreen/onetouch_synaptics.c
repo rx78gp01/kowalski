@@ -274,6 +274,8 @@ static bool onetouch_synaptics_sleep_mode(struct i2c_client *client, bool onoff)
 	onetouch_synaptics_write_reg(client, (char *)&mode_buf, sizeof(mode_buf));
 
 	onetouch_synaptics_write_reg(client, (char *)&g_OT_StartAddr, 2);
+
+    return true;
 }
 
 static bool init_setting_onetouch_device(struct i2c_client *client)
@@ -449,7 +451,7 @@ static irqreturn_t onetouch_synaptics_ts_irq_handler(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int __init onetouch_synaptics_ts_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int onetouch_synaptics_ts_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct onetouch_synaptics_ts_data *ts;
 	int ret = 0;

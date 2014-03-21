@@ -43,7 +43,7 @@ static int __exit bd_address_remove(struct platform_device *pdev)
 	return 0;
 }
 
-static int __init bd_address_probe(struct platform_device *pdev)
+static int bd_address_probe(struct platform_device *pdev)
 {
 	int ret;
 

@@ -2155,7 +2155,7 @@ static void star_initial_charger_state(void)
 	DBG("[FULLBAT]: charger state machine(%s)", charger_ic_state_machine_name[charger_ic_get_state()]);
 }
 
-static int __init battery_probe(struct platform_device *pdev)
+static int battery_probe(struct platform_device *pdev)
 {
 	DBG();
 	struct battery_info *batt_info;

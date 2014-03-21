@@ -166,7 +166,7 @@ err_task_handler:
 	return 0;
 }
 
-static int __init LGE_touch_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int LGE_touch_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	LGE_Touch_Driver_Data *touch = NULL;
 

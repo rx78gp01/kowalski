@@ -92,7 +92,7 @@ static irqreturn_t star_hall_intr_handler(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int __init star_hall_probe( struct platform_device *pdev )
+static int star_hall_probe( struct platform_device *pdev )
 {
 	int err = 0;
 	struct device *dev = &pdev->dev;

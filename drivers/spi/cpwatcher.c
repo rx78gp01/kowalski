@@ -227,7 +227,7 @@ static irqreturn_t ifx_reset_interrupt_handler(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
-static int __init cpw_probe(struct platform_device *pdev)
+static int cpw_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;    
 	int err =0;

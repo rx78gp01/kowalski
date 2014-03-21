@@ -233,7 +233,7 @@ static int lp8720_resume(struct i2c_client *client)
 #define lp8720_resume         NULL
 #endif /* CONFIG_PM */
 
-static int __init lp8720_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int lp8720_probe(struct i2c_client *client, const struct i2c_device_id *id)
 {
 	struct lp8720_platform_data *pdata = NULL;
 	int err;
