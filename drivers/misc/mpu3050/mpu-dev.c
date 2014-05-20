@@ -918,6 +918,12 @@ int mpu_suspend(struct i2c_client *client, pm_message_t mesg)
 	    i2c_get_adapter(mldl_cfg->pdata->compass.adapt_num);
 	pressure_adapter =
 	    i2c_get_adapter(mldl_cfg->pdata->pressure.adapt_num);
+	    
+//deukgi.shin@lge.com // power down when shutdown[S]
+#ifndef CONFIG_MACH_BSSQ
+	mpu3050_power_terminate();
+#endif
+//deukgi.shin@lge.com // power down when shutdown[S]
 
 	mutex_lock(&mpu->mutex);
 	if (!mldl_cfg->ignore_system_suspend) {
@@ -936,6 +942,12 @@ int mpu_suspend(struct i2c_client *client, pm_message_t mesg)
 	mutex_unlock(&mpu->mutex);
 	return 0;
 }
+
+//deukgi.shin@lge.com // to sensors power down when suspend[S]
+#ifndef (CONFIG_MACH_BSSQ)
+static void mpu3050_power_init(void);
+#endif
+//deukgi.shin@lge.com // to sensors power down when suspend[E]
 
 int mpu_resume(struct i2c_client *client)
 {
@@ -1284,6 +1296,125 @@ static struct i2c_driver mpu3050_driver = {
 	.resume = mpu_resume,	/* optional */
 
 };
+
+// LGE_CHANGE_S [dongjin73.kim@lge.com] 2011-01-19, [LGE_AP20] Sensor integration
+#include <linux/regulator/consumer.h>
+
+static void mpu3050_power_init(void)
+{
+	struct regulator *regulator1 = NULL;
+	struct regulator *regulator2 = NULL;
+	unsigned int gyro_int_gpio;
+
+#if defined (CONFIG_MACH_STAR)
+	gyro_int_gpio = TEGRA_GPIO_PQ5;
+#elif defined (CONFIG_MACH_BSSQ)
+
+  #if defined (CONFIG_KS1001) 
+	if(get_lge_pcb_revision() >= REV_C)
+		gyro_int_gpio = TEGRA_GPIO_PF6;
+	else
+		gyro_int_gpio = TEGRA_GPIO_PB3;
+  #elif defined (CONFIG_KS1103)
+	gyro_int_gpio = TEGRA_GPIO_PF6;
+  #else
+	gyro_int_gpio = TEGRA_GPIO_PB3;
+  #endif
+
+#endif
+
+	printk(KERN_INFO "mpu3050_power_init..  \n");	
+
+#ifdef CONFIG_MACH_BSSQ
+    // 20110618 hyokmin.kwon@lge.com Gyro sensor power sequence (OFF in BL -> ON in init)
+    // Set GYRO_INT as input and LOW for 1.5s
+    gpio_request(TEGRA_GPIO_PE1, "i2c_sw");
+    tegra_gpio_enable(TEGRA_GPIO_PE1);
+    gpio_direction_output(TEGRA_GPIO_PE1, 0);
+#endif
+
+	gpio_request(gyro_int_gpio, "gyro_int");
+	
+#if defined (CONFIG_MACH_BSSQ)
+	tegra_gpio_enable(gyro_int_gpio);
+#else
+	gpio_direction_output(gyro_int_gpio, 0);
+	tegra_gpio_enable(gyro_int_gpio);
+#endif	
+	
+	regulator1 = regulator_get(NULL, "vcc_sensor_3v0");
+	if (!regulator1) {
+		printk(KERN_INFO "mpu3050: vcc_sensor_3v0 failed\n");
+	}
+
+	regulator_set_voltage(regulator1, 3000000, 3000000);
+
+	regulator2 = regulator_get(NULL, "vcc_sensor_1v8");
+	if (!regulator2) {
+		printk(KERN_INFO "mpu3050: vcc_sensor_1v8 failed\n");
+	}
+	regulator_set_voltage(regulator2, 1800000, 1800000);
+
+	regulator_enable(regulator1);
+	mdelay(10);
+	regulator_enable(regulator2);
+	mdelay(10);
+	
+#ifdef CONFIG_MACH_BSSQ
+    gpio_direction_output(TEGRA_GPIO_PE1, 1);
+#endif
+
+	gpio_direction_input(gyro_int_gpio);	
+
+#if defined (CONFIG_MACH_STAR)
+    gpio_request(TEGRA_GPIO_PR4, "com_int");
+    gpio_request(TEGRA_GPIO_PI0, "motion_int");
+	gpio_direction_input(TEGRA_GPIO_PR4);
+	gpio_direction_input(TEGRA_GPIO_PI0);
+#endif
+
+	mdelay(1);
+}
+
+//deukgi.shin@lge.com // to sensors power down when suspend[S]
+#ifndef (CONFIG_MACH_BSSQ)
+static void mpu3050_power_terminate(void)
+{
+	struct regulator *regulator1 = NULL;
+	struct regulator *regulator2 = NULL;
+
+	printk("ENTER : %s", __FUNCTION__);
+		
+	printk(KERN_INFO "mpu3050_power_terminate.. \n");
+
+#ifdef CONFIG_MACH_BSSQ
+	gpio_direction_output(TEGRA_GPIO_PE1, 0);     // I2C SW OFF		
+#endif
+
+	mdelay(10);
+	regulator1 = regulator_get(NULL, "vcc_sensor_3v0");
+	if (!regulator1) {
+		printk(KERN_INFO "mpu3050: vcc_sensor_3v0 failed\n");
+	}
+	regulator_set_voltage(regulator1, 3000*1000, 3000*1000);
+	regulator2 = regulator_get(NULL, "vcc_sensor_1v8");
+	if (!regulator2) {
+		printk(KERN_INFO "mpu3050: vcc_sensor_1v8 failed\n");
+	}
+	regulator_set_voltage(regulator2, 1800*1000, 1800*1000);
+		
+	regulator_disable(regulator2);	// 1.8 VI/O OFF
+	mdelay(10);
+	regulator_disable(regulator1);	// 3.0 VDD OFF
+	
+#if defined (CONFIG_MACH_STAR)	
+	gpio_free(TEGRA_GPIO_PR4);
+	gpio_free(TEGRA_GPIO_PI0);
+#endif
+
+}
+#endif /* ifndef (CONFIG_MACH_BSSQ) */
+//deukgi.shin@lge.com // to sensors power down when suspend[E]
 
 static int __init mpu_init(void)
 {
