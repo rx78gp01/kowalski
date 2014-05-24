@@ -320,7 +320,7 @@ static int __init star_proximity_init(void)
 //end proximity sensor
 
 #if defined(CONFIG_MPU_SENSORS_MPU3050)
-static struct mpu_platform_data mpu_gyro_data = {
+static struct mpu3050_platform_data mpu_gyro_data = {
 	.int_config	= 0x10,
 	.level_shifter	= 0,
 	.orientation	= MPU_GYRO_ORIENTATION,	/* Located in board_[platformname].h	*/

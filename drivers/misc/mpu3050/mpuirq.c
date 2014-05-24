@@ -185,7 +185,7 @@ static void mpu_accel_data_work_fcn(struct work_struct *work)
 			wbuff[2 * ii + 2] = rbuff[2 * ii + 0];
 		}
 	} else {
-		memcpy(wbuff + 1, rbuff, mldl_cfg->accel->len);
+		memcpy(wbuff + 1, rbuff, mldl_cfg->accel->read_len);
 	}
 
 	wbuff[7] = 0;

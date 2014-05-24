@@ -49,6 +49,11 @@ extern "C" {
  * You can modify this (for example with "#define MPL_LOG_NDEBUG 0"
  * at the top of your source file) to change that behavior.
  */
+ 
+#if defined(CONFIG_MACH_BSSQ)
+#define MPL_LOG_NDEBUG 1
+#endif
+ 
 #ifndef MPL_LOG_NDEBUG
 #ifdef NDEBUG
 #define MPL_LOG_NDEBUG 1

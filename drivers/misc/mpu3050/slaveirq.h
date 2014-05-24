@@ -27,9 +27,22 @@
 #include "mpu.h"
 #include "mpuirq.h"
 
+#ifdef CONFIG_MACH_STAR
+
+#define SLAVEIRQ_ENABLE_DEBUG          (1)
+#define SLAVEIRQ_GET_INTERRUPT_CNT     (2)
+#define SLAVEIRQ_GET_IRQ_TIME          (3)
+#define SLAVEIRQ_GET_LED_VALUE         (4)
+#define SLAVEIRQ_SET_TIMEOUT           (5)
+#define SLAVEIRQ_SET_SLAVE_INFO        (6)
+
+#else
+
 #define SLAVEIRQ_SET_TIMEOUT           _IOW(MPU_IOCTL, 0x50, unsigned long)
 #define SLAVEIRQ_GET_INTERRUPT_CNT     _IOR(MPU_IOCTL, 0x51, unsigned long)
 #define SLAVEIRQ_GET_IRQ_TIME          _IOR(MPU_IOCTL, 0x52, unsigned long)
+
+#endif /* CONFIG_MACH_STAR */
 
 #ifdef __KERNEL__
 

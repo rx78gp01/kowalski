@@ -4,11 +4,13 @@
 #
 
 # MPU
-obj-$(CONFIG_MPU_SENSORS_MPU3050)	+= mpu3050.o
+obj-$(CONFIG_MPU_SENSORS_MPU3050) += mpu3050.o
+
 mpu3050-objs += mpuirq.o \
 	slaveirq.o \
 	mpu-dev.o \
 	mpu-i2c.o \
+	mpu-accel.o \
 	mlsl-kernel.o \
 	mlos-kernel.o \
 	$(MLLITE_DIR)mldl_cfg.o
@@ -105,10 +107,19 @@ ifdef CONFIG_MPU_SENSORS_BMA085
 mpu3050-objs += $(MLLITE_DIR)pressure/bma085.o
 endif
 
+ifdef CONFIG_MACH_BSSQ
 EXTRA_CFLAGS += -I$(M)/$(MLLITE_DIR) \
                 -I$(M)/../../include \
-		-Idrivers/misc/mpu3050 \
-                -Iinclude/linux
+                -Idrivers/misc/mpu3050 \
+                -Iinclude/linux \
+                -Iarch/arm/mach-tegra/lge/bssq/include
+else
+EXTRA_CFLAGS += -I$(M)/$(MLLITE_DIR) \
+                -I$(M)/../../include \
+                -Idrivers/misc/mpu3050 \
+                -Iinclude/linux \
+                -Iarch/arm/mach-tegra/lge/star/include
+endif
 
 obj-$(CONFIG_MPU_SENSORS_MPU6000)+= mpu6000.o
 mpu6000-objs += mpuirq.o \
@@ -126,6 +137,10 @@ endif
 
 ifdef CONFIG_MPU_SENSORS_MPU6000
 EXTRA_CFLAGS += -DM_HW
+endif
+
+ifdef CONFIG_MPU_SENSORS_DEBUG
+EXTRA_CFLAGS += -DDEBUG 
 endif
 
 obj-$(CONFIG_MPU_SENSORS_TIMERIRQ)+= timerirq.o

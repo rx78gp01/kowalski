@@ -636,7 +636,7 @@ static int kxtf9_read(void *mlsl_handle,
 		return ML_ERROR_ACCEL_DATA_NOT_READY;
 
 	result = MLSLSerialRead(mlsl_handle, pdata->address,
-				slave->reg, slave->len, data);
+				slave->read_reg, slave->read_len, data);
 	ERROR_CHECK(result);
 	return result;
 }

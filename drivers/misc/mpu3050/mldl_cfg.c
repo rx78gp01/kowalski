@@ -38,6 +38,8 @@
 #include "mlos.h"
 
 #include "log.h"
+#include "mpu-accel.h"
+
 #undef MPL_LOG_TAG
 #define MPL_LOG_TAG "mldl_cfg:"
 
@@ -56,6 +58,18 @@
 #define RESET   1
 #define STANDBY 1
 #endif
+
+// 20110825 sangki.hyun@lge.com Sensor I2C Error [S]
+#define ERROR_CHECK_WITH_MUTEX_UNLOCK(x,y)                                                  \
+	{								\
+		if (ML_SUCCESS != x) {					\
+			MPL_LOGE("%s|%s|%d returning %d\n",		\
+				__FILE__, __func__, __LINE__, x);	\
+			mutex_unlock(y);				\
+			return x;					\
+		}							\
+	}
+// 20110825 sangki.hyun@lge.com Sensor I2C Error [E]
 
 /*---------------------*/
 /*-    Prototypes.    -*/
@@ -708,9 +722,9 @@ void mpu_print_cfg(struct mldl_cfg *mldl_cfg)
 		MPL_LOGD("slave_accel->type         = %02x\n",
 			 mldl_cfg->accel->type);
 		MPL_LOGD("slave_accel->reg          = %02x\n",
-			 mldl_cfg->accel->reg);
+			 mldl_cfg->accel->read_reg);
 		MPL_LOGD("slave_accel->len          = %02x\n",
-			 mldl_cfg->accel->len);
+			 mldl_cfg->accel->read_len);
 		MPL_LOGD("slave_accel->endian       = %02x\n",
 			 mldl_cfg->accel->endian);
 		MPL_LOGD("slave_accel->range.mantissa= %02lx\n",
@@ -731,9 +745,9 @@ void mpu_print_cfg(struct mldl_cfg *mldl_cfg)
 		MPL_LOGD("slave_compass->type       = %02x\n",
 			 mldl_cfg->compass->type);
 		MPL_LOGD("slave_compass->reg        = %02x\n",
-			 mldl_cfg->compass->reg);
+			 mldl_cfg->compass->read_reg);
 		MPL_LOGD("slave_compass->len        = %02x\n",
-			 mldl_cfg->compass->len);
+			 mldl_cfg->compass->read_len);
 		MPL_LOGD("slave_compass->endian     = %02x\n",
 			 mldl_cfg->compass->endian);
 		MPL_LOGD("slave_compass->range.mantissa= %02lx\n",
@@ -755,9 +769,9 @@ void mpu_print_cfg(struct mldl_cfg *mldl_cfg)
 		MPL_LOGD("slave_pressure->type       = %02x\n",
 			 mldl_cfg->pressure->type);
 		MPL_LOGD("slave_pressure->reg        = %02x\n",
-			 mldl_cfg->pressure->reg);
+			 mldl_cfg->pressure->read_reg);
 		MPL_LOGD("slave_pressure->len        = %02x\n",
-			 mldl_cfg->pressure->len);
+			 mldl_cfg->pressure->read_len);
 		MPL_LOGD("slave_pressure->endian     = %02x\n",
 			 mldl_cfg->pressure->endian);
 		MPL_LOGD("slave_pressure->range.mantissa= %02lx\n",
@@ -855,8 +869,8 @@ int mpu_set_slave(struct mldl_cfg *mldl_cfg,
 		slave_endian = 0;
 		slave_address = 0;
 	} else {
-		slave_reg = slave->reg;
-		slave_len = slave->len;
+		slave_reg = slave->read_reg;
+		slave_len = slave->read_len;
 		slave_endian = slave->endian;
 		slave_address = slave_pdata->address;
 	}
@@ -1378,19 +1392,24 @@ int mpu3050_resume(struct mldl_cfg *mldl_cfg,
 
 	if (resume_gyro && mldl_cfg->gyro_is_suspended) {
 		result = gyro_resume(mldl_cfg, gyro_handle);
-		ERROR_CHECK(result);
+		ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 	}
 
 	if (resume_accel && mldl_cfg->accel_is_suspended) {
 		if (!mldl_cfg->gyro_is_suspended &&
 		    EXT_SLAVE_BUS_SECONDARY == mldl_cfg->pdata->accel.bus) {
 			result = MLDLSetI2CBypass(mldl_cfg, gyro_handle, TRUE);
-			ERROR_CHECK(result);
+			ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 		}
-		result = mldl_cfg->accel->resume(accel_handle,
+#ifdef FEATURE_USES_MPU_ACCEL 
+        result = mpu_accel_resume(mldl_cfg);
+
+#else
+	    result = mldl_cfg->accel->resume(accel_handle,
 						 mldl_cfg->accel,
 						 &mldl_cfg->pdata->accel);
-		ERROR_CHECK(result);
+#endif
+       ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 		mldl_cfg->accel_is_suspended = FALSE;
 	}
 
@@ -1400,7 +1419,7 @@ int mpu3050_resume(struct mldl_cfg *mldl_cfg,
 				gyro_handle,
 				mldl_cfg->accel,
 				&mldl_cfg->pdata->accel);
-		ERROR_CHECK(result);
+		ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 	}
 
 	if (resume_compass && mldl_cfg->compass_is_suspended) {
@@ -1413,7 +1432,7 @@ int mpu3050_resume(struct mldl_cfg *mldl_cfg,
 						   mldl_cfg->compass,
 						   &mldl_cfg->pdata->
 						   compass);
-		ERROR_CHECK(result);
+		ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 		mldl_cfg->compass_is_suspended = FALSE;
 	}
 
@@ -1423,7 +1442,7 @@ int mpu3050_resume(struct mldl_cfg *mldl_cfg,
 				gyro_handle,
 				mldl_cfg->compass,
 				&mldl_cfg->pdata->compass);
-		ERROR_CHECK(result);
+		ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 	}
 
 	if (resume_pressure && mldl_cfg->pressure_is_suspended) {
@@ -1436,7 +1455,7 @@ int mpu3050_resume(struct mldl_cfg *mldl_cfg,
 						    mldl_cfg->pressure,
 						    &mldl_cfg->pdata->
 						    pressure);
-		ERROR_CHECK(result);
+		ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 		mldl_cfg->pressure_is_suspended = FALSE;
 	}
 
@@ -1446,14 +1465,16 @@ int mpu3050_resume(struct mldl_cfg *mldl_cfg,
 				gyro_handle,
 				mldl_cfg->pressure,
 				&mldl_cfg->pdata->pressure);
-		ERROR_CHECK(result);
+		ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 	}
 
 	/* Now start */
 	if (resume_gyro) {
 		result = dmp_start(mldl_cfg, gyro_handle);
-		ERROR_CHECK(result);
+		ERROR_CHECK_WITH_MUTEX_UNLOCK(result,&mldl_cfg->mutex);
 	}
+	
+	mutex_unlock(&mldl_cfg->mutex);
 
 	return result;
 }

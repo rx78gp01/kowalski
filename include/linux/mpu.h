@@ -23,16 +23,81 @@
 #include <linux/types.h>
 #include <linux/ioctl.h>
 
+#ifdef CONFIG_MPU_SENSORS_MPU3050
+#include <linux/mpu3050.h>
+#endif
+
 /* Number of axes on each sensor */
 #define GYRO_NUM_AXES               (3)
 #define ACCEL_NUM_AXES              (3)
 #define COMPASS_NUM_AXES            (3)
 
+#ifdef CONFIG_MACH_STAR
+/* IOCTL commands for /dev/mpu */
+#define MPU_SET_MPU_CONFIG          (0x00)
+#define MPU_SET_INT_CONFIG          (0x01)
+#define MPU_SET_EXT_SYNC            (0x02)
+#define MPU_SET_FULL_SCALE          (0x03)
+#define MPU_SET_LPF                 (0x04)
+#define MPU_SET_CLK_SRC             (0x05)
+#define MPU_SET_DIVIDER             (0x06)
+#define MPU_SET_LEVEL_SHIFTER       (0x07)
+#define MPU_SET_DMP_ENABLE          (0x08)
+#define MPU_SET_FIFO_ENABLE         (0x09)
+#define MPU_SET_DMP_CFG1            (0x0a)
+#define MPU_SET_DMP_CFG2            (0x0b)
+#define MPU_SET_OFFSET_TC           (0x0c)
+#define MPU_SET_RAM                 (0x0d)
+
+#define MPU_SET_PLATFORM_DATA       (0x0e)
+
+#define MPU_GET_MPU_CONFIG          (0x80)
+#define MPU_GET_INT_CONFIG          (0x81)
+#define MPU_GET_EXT_SYNC            (0x82)
+#define MPU_GET_FULL_SCALE          (0x83)
+#define MPU_GET_LPF                 (0x84)
+#define MPU_GET_CLK_SRC             (0x85)
+#define MPU_GET_DIVIDER             (0x86)
+#define MPU_GET_LEVEL_SHIFTER       (0x87)
+#define MPU_GET_DMP_ENABLE          (0x88)
+#define MPU_GET_FIFO_ENABLE         (0x89)
+#define MPU_GET_DMP_CFG1            (0x8a)
+#define MPU_GET_DMP_CFG2            (0x8b)
+#define MPU_GET_OFFSET_TC           (0x8c)
+#define MPU_GET_RAM                 (0x8d)
+
+#define MPU_READ_REGISTER           (0x40)
+#define MPU_WRITE_REGISTER          (0x41)
+#define MPU_READ_MEMORY             (0x42)
+#define MPU_WRITE_MEMORY            (0x43)
+
+#define MPU_SUSPEND                 (0x44)
+#define MPU_RESUME                  (0x45)
+#define MPU_READ_COMPASS            (0x46)
+#define MPU_READ_ACCEL              (0x47)
+#define MPU_READ_PRESSURE           (0x48)
+
+#define MPU_CONFIG_ACCEL            (0x20)
+#define MPU_CONFIG_COMPASS          (0x21)
+#define MPU_CONFIG_PRESSURE         (0x22)
+
+#define MPU_GET_CONFIG_ACCEL        (0x28)
+#define MPU_GET_CONFIG_COMPASS      (0x29)
+#define MPU_GET_CONFIG_PRESSURE     (0x2a)
+
+#endif
+
 struct mpu_read_write {
 	/* Memory address or register address depending on ioctl */
+#ifdef CONFIG_MACH_STAR
+    unsigned short address;
+	unsigned short length;
+	unsigned char *data;
+#else
 	__u16 address;
 	__u16 length;
 	__u8 *data;
+#endif
 };
 
 enum mpuirq_data_type {
@@ -47,10 +112,18 @@ enum mpuirq_data_type {
 #define MPU_PM_EVENT_POST_SUSPEND    (4)
 
 struct mpuirq_data {
+#ifdef CONFIG_MACH_STAR
+    int interruptcount;
+	unsigned long long irqtime;
+	int data_type;
+	int data_size;
+	void *data;
+#else
 	__u32 interruptcount;
 	__u64 irqtime;
 	__u32 data_type;
 	__s32 data;
+#endif
 };
 
 enum ext_slave_config_key {
@@ -64,6 +137,9 @@ enum ext_slave_config_key {
 	MPU_SLAVE_CONFIG_NMOT_DUR,
 	MPU_SLAVE_CONFIG_IRQ_SUSPEND,
 	MPU_SLAVE_CONFIG_IRQ_RESUME,
+#ifdef CONFIG_MACH_STAR
+    MPU_SLAVE_CONFIG_NUM_CONFIG_KEYS,
+#else
 	MPU_SLAVE_WRITE_REGISTERS,
 	MPU_SLAVE_READ_REGISTERS,
 	MPU_SLAVE_CONFIG_INTERNAL_REFERENCE,
@@ -96,6 +172,7 @@ enum ext_slave_config_key {
 	MPU_SLAVE_RAM,
 	/* -------------------------- */
 	MPU_SLAVE_CONFIG_NUM_CONFIG_KEYS
+#endif
 };
 
 /* For the MPU_SLAVE_CONFIG_IRQ_SUSPEND and MPU_SLAVE_CONFIG_IRQ_RESUME */
@@ -140,7 +217,11 @@ struct ext_slave_config {
 
 enum ext_slave_type {
 	EXT_SLAVE_TYPE_GYROSCOPE,
-	EXT_SLAVE_TYPE_ACCEL,
+#ifdef CONFIG_MACH_STAR
+	EXT_SLAVE_TYPE_ACCELEROMETER,
+#else
+    EXT_SLAVE_TYPE_ACCEL,
+#endif
 	EXT_SLAVE_TYPE_COMPASS,
 	EXT_SLAVE_TYPE_PRESSURE,
 	/*EXT_SLAVE_TYPE_TEMPERATURE */
@@ -216,12 +297,21 @@ enum ext_slave_bus {
  * column should have exactly 1 non-zero value.
  */
 struct ext_slave_platform_data {
+#ifdef CONFIG_MACH_STAR
+    struct ext_slave_descr *(*get_slave_descr) (void);
+	int irq;
+	int adapt_num;
+	int bus;
+	unsigned char address;
+	signed char orientation[9];
+#else
 	__u8 type;
 	__u32 irq;
 	__u32 adapt_num;
 	__u32 bus;
 	__u8 address;
 	__s8 orientation[9];
+#endif
 	void *irq_data;
 	void *private_data;
 };
@@ -281,7 +371,11 @@ struct ext_slave_descr {
 	int (*read) (void *mlsl_handle,
 		     struct ext_slave_descr *slave,
 		     struct ext_slave_platform_data *pdata,
-		     __u8 *data);
+#ifdef CONFIG_MACH_STAR
+		     unsigned char *data);
+#else
+            __u8 *data);
+#endif
 	int (*config) (void *mlsl_handle,
 		       struct ext_slave_descr *slave,
 		       struct ext_slave_platform_data *pdata,
@@ -292,15 +386,20 @@ struct ext_slave_descr {
 			   struct ext_slave_config *config);
 
 	char *name;
-	__u8 type;
+	
+#ifdef CONFIG_MACH_STAR
+	unsigned char type;
+	unsigned char id;
+	unsigned char read_reg;
+	unsigned int read_len;
+	unsigned char endian;
+#else
+    __u8 type;
 	__u8 id;
 	__u8 read_reg;
-#ifdef CONFIG_MACH_STAR
-	unsigned int read_len;
-#else
 	__u8 read_len;
-#endif
 	__u8 endian;
+#endif
 	struct fix_pnt_range range;
 #ifndef CONFIG_MACH_STAR
 	struct ext_slave_read_trigger *trigger;
@@ -319,10 +418,20 @@ struct ext_slave_descr {
  * platform orientation.  The values must be one of 0, 1, or -1 and each row and
  * column should have exactly 1 non-zero value.
  */
+#ifdef CONFIG_MACH_STAR
+struct mpu3050_platform_data {
+	unsigned char int_config;
+	signed char orientation[MPU_NUM_AXES * MPU_NUM_AXES];
+	unsigned char level_shifter;
+	struct ext_slave_platform_data accel;
+	struct ext_slave_platform_data compass;
+	struct ext_slave_platform_data pressure;
+#else
 struct mpu_platform_data {
 	__u8 int_config;
 	__u8 level_shifter;
 	__s8 orientation[GYRO_NUM_AXES * GYRO_NUM_AXES];
+#endif
 };
 
 #if defined (CONFIG_MACH_STAR)
@@ -430,5 +539,26 @@ struct mpu_platform_data {
 #define MPU_GET_I2C_SLAVES_ENABLED	_IOR(MPU_IOCTL, 0x43, __u8)
 #endif
 
+/* 
+    Accelerometer
+*/
+#define get_accel_slave_descr NULL
+ 
+#ifdef CONFIG_MPU_SENSORS_KXTF9	/* Kionix accelerometer */
+struct ext_slave_descr *kxtf9_get_slave_descr(void);
+#undef get_accel_slave_descr
+#define get_accel_slave_descr kxtf9_get_slave_descr
+#endif
+
+/*
+    Compass
+*/
+#define get_compass_slave_descr NULL
+
+#ifdef CONFIG_MPU_SENSORS_AMI30X	/* AICHI Steel compass */
+struct ext_slave_descr *ami30x_get_slave_descr(void);
+#undef get_compass_slave_descr
+#define get_compass_slave_descr ami30x_get_slave_descr
+#endif
 
 #endif				/* __MPU_H_ */
