@@ -1070,7 +1070,7 @@ static int aat2870_bl_probe(struct i2c_client *client, const struct i2c_device_i
 	}
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
-	drvdata->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 21;
+	drvdata->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 1;
 	drvdata->early_suspend.suspend = aat2870_bl_early_suspend;
 	drvdata->early_suspend.resume = aat2870_bl_late_resume;
 	register_early_suspend(&drvdata->early_suspend);
