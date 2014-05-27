@@ -137,6 +137,10 @@ struct page {
 	 */
 	void *shadow;
 #endif
+
+#ifdef CONFIG_PKSM
+	void *pksm;
+#endif
 }
 /*
  * If another subsystem starts using the double word pairing for atomic

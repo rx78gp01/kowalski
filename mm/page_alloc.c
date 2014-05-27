@@ -1196,6 +1196,11 @@ void free_hot_cold_page(struct page *page, int cold)
 	int migratetype;
 	int wasMlocked = __TestClearPageMlocked(page);
 
+#ifdef CONFIG_PKSM
+		if (PagePKSM(page)) 
+			pksm_del_anon_page(page);
+#endif
+
 	if (!free_pages_prepare(page, 0))
 		return;
 
@@ -5825,6 +5830,9 @@ static struct trace_print_flags pageflag_names[] = {
 	{1UL << PG_hwpoison,		"hwpoison"	},
 #endif
 	{1UL << PG_readahead,           "PG_readahead"  },
+#ifdef CONFIG_PKSM
+	{1UL << PG_pksm,			"pksm"		},
+#endif
 	{-1UL,				NULL		},
 };
 
