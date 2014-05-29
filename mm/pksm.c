@@ -283,10 +283,10 @@ static unsigned long ksm_stable_nodes;
 unsigned long ksm_pages_zero_sharing;
 
 /* Number of pages ksmd should scan in one batch */
-static unsigned int ksm_thread_pages_to_scan = 1000;
+static unsigned int ksm_thread_pages_to_scan = 100;
 
 /* Milliseconds ksmd should sleep between batches */
-static unsigned int ksm_thread_sleep_millisecs = 20;
+static unsigned int ksm_thread_sleep_millisecs = 50;
 
 /*Seconds pksm should update all unshared_pages by one period*/
 static unsigned int pksm_unshared_page_update_period = 10;
