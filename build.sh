@@ -1,1 +1,0 @@
-make CFLAGS="-O3 -funroll-loops -march=armv7-a -fstrict-aliasing -mtune=cortex-a9" ARCH=arm CROSS_COMPILE=/home/david/cm11/firtecy/prebuilt/linux-x86/toolchain/arm-none-eabi-4.7/bin/arm-none-eabi- -j3
