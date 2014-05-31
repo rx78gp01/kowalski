@@ -68,6 +68,7 @@ static void mpu_accel_data_work_fcn(struct work_struct *work);
 
 static int mpuirq_open(struct inode *inode, struct file *file)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	dev_dbg(mpuirq_dev_data.dev->this_device,
 		"%s current->pid %d\n", __func__, current->pid);
 	mpuirq_dev_data.pid = current->pid;
@@ -78,6 +79,7 @@ static int mpuirq_open(struct inode *inode, struct file *file)
 /* close function - called when the "file" /dev/mpuirq is closed in userspace */
 static int mpuirq_release(struct inode *inode, struct file *file)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	dev_dbg(mpuirq_dev_data.dev->this_device, "mpuirq_release\n");
 	return 0;
 }
@@ -86,12 +88,17 @@ static int mpuirq_release(struct inode *inode, struct file *file)
 static ssize_t mpuirq_read(struct file *file,
 			   char *buf, size_t count, loff_t *ppos)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int len, err;
 	struct mpuirq_dev_data *p_mpuirq_dev_data = file->private_data;
 
 	if (!mpuirq_dev_data.data_ready &&
+#ifdef CONFIG_MACH_STAR
+        mpuirq_dev_data.timeout > 0) {
+#else
 		mpuirq_dev_data.timeout &&
 		(!(file->f_flags & O_NONBLOCK))) {
+#endif
 		wait_event_interruptible_timeout(mpuirq_wait,
 						 mpuirq_dev_data.
 						 data_ready,
@@ -117,6 +124,7 @@ static ssize_t mpuirq_read(struct file *file,
 
 unsigned int mpuirq_poll(struct file *file, struct poll_table_struct *poll)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int mask = 0;
 
 	poll_wait(file, &mpuirq_wait, poll);
@@ -129,6 +137,7 @@ unsigned int mpuirq_poll(struct file *file, struct poll_table_struct *poll)
 static long mpuirq_ioctl(struct file *file,
 			 unsigned int cmd, unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int retval = 0;
 	int data;
 
@@ -162,6 +171,7 @@ static long mpuirq_ioctl(struct file *file,
 
 static void mpu_accel_data_work_fcn(struct work_struct *work)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpuirq_dev_data *mpuirq_dev_data =
 	    (struct mpuirq_dev_data *) work;
 	struct mldl_cfg *mldl_cfg =
@@ -197,6 +207,7 @@ static void mpu_accel_data_work_fcn(struct work_struct *work)
 
 static irqreturn_t mpuirq_handler(int irq, void *dev_id)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	static int mycount;
 	struct timeval irqtime;
 	mycount++;
@@ -247,7 +258,7 @@ static struct miscdevice mpuirq_device = {
 
 int mpuirq_init(struct i2c_client *mpu_client)
 {
-
+    printk("ENTER : %s\n", __FUNCTION__);
 	int res;
 	struct mldl_cfg *mldl_cfg =
 	    (struct mldl_cfg *) i2c_get_clientdata(mpu_client);
@@ -302,6 +313,7 @@ int mpuirq_init(struct i2c_client *mpu_client)
 
 void mpuirq_exit(void)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	/* Free the IRQ first before flushing the work */
 	if (mpuirq_dev_data.irq > 0)
 		free_irq(mpuirq_dev_data.irq, &mpuirq_dev_data.irq);

@@ -39,10 +39,11 @@ choice
     depends on MPU_SENSORS_MPU6000 || MPU_SENSORS_MPU3050
     optional
 
-config MPU_SENSORS_AK8975
-    bool "AKM ak8975"
+config MPU_SENSORS_AMI30X
+    bool "Aichi Steel ami30X"
+    depends on MPU_SENSORS_MPU3050
     help
-      This enables support for the AKM ak8975 compass
+      This enables support for the Aichi Steel ami304/ami305 compass
 
 endchoice
 

@@ -60,6 +60,7 @@ static struct miscdevice *timerirq_dev_data;
 
 static void timerirq_handler(unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct timerirq_data *data = (struct timerirq_data *)arg;
 	struct timeval irqtime;
 
@@ -87,6 +88,7 @@ static void timerirq_handler(unsigned long arg)
 
 static int start_timerirq(struct timerirq_data *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	dev_dbg(data->dev->this_device,
 		"%s current->pid %d\n", __func__, current->pid);
 
@@ -110,6 +112,7 @@ static int start_timerirq(struct timerirq_data *data)
 
 static int stop_timerirq(struct timerirq_data *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	dev_dbg(data->dev->this_device,
 		"%s current->pid %lx\n", __func__, (unsigned long)data);
 
@@ -126,6 +129,7 @@ static int stop_timerirq(struct timerirq_data *data)
  */
 static int timerirq_open(struct inode *inode, struct file *file)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	/* Device node is availabe in the file->private_data, this is
 	 * exactly what we want so we leave it there */
 	struct miscdevice *dev_data = file->private_data;
@@ -145,6 +149,7 @@ static int timerirq_open(struct inode *inode, struct file *file)
 
 static int timerirq_release(struct inode *inode, struct file *file)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct timerirq_data *data = file->private_data;
 	dev_dbg(data->dev->this_device, "timerirq_release\n");
 	if (data->run)
@@ -157,12 +162,18 @@ static int timerirq_release(struct inode *inode, struct file *file)
 static ssize_t timerirq_read(struct file *file,
 			   char *buf, size_t count, loff_t *ppos)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int len, err;
 	struct timerirq_data *data = file->private_data;
 
+#ifdef CONFIG_MACH_STAR
+	if (!data->data_ready && 
+            data->timeout > 0) {
+#else
 	if (!data->data_ready &&
 		data->timeout &&
 		!(file->f_flags & O_NONBLOCK)) {
+#endif
 		wait_event_interruptible_timeout(data->timerirq_wait,
 						 data->data_ready,
 						 data->timeout);
@@ -188,6 +199,7 @@ static ssize_t timerirq_read(struct file *file,
 static unsigned int timerirq_poll(struct file *file,
 				struct poll_table_struct *poll)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int mask = 0;
 	struct timerirq_data *data = file->private_data;
 
@@ -201,6 +213,7 @@ static unsigned int timerirq_poll(struct file *file,
 static long timerirq_ioctl(struct file *file,
 			   unsigned int cmd, unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int retval = 0;
 	int tmp;
 	struct timerirq_data *data = file->private_data;
@@ -255,7 +268,7 @@ static const struct file_operations timerirq_fops = {
 
 static int __init timerirq_init(void)
 {
-
+    printk("ENTER : %s\n", __FUNCTION__);
 	int res;
 	static struct miscdevice *data;
 
@@ -281,6 +294,7 @@ module_init(timerirq_init);
 
 static void __exit timerirq_exit(void)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct miscdevice *data = timerirq_dev_data;
 
 	dev_info(data->this_device, "Unregistering %s\n",

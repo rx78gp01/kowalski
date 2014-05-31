@@ -413,7 +413,7 @@ static int kxtf9_init(void *mlsl_handle,
 		struct ext_slave_descr *slave,
 		struct ext_slave_platform_data *pdata)
 {
-
+    printk("ENTER: %s", __FUNCTION__);
 	struct kxtf9_private_data *private_data;
 	int result = ML_SUCCESS;
 
@@ -437,6 +437,8 @@ static int kxtf9_init(void *mlsl_handle,
 	ERROR_CHECK(result);
 	MLOSSleep(2);
 
+    printk("IN: %s at 1 with %d", __FUNCTION__, result);
+
 	pdata->private_data = private_data;
 
 	private_data->resume.ctrl_reg1 = 0xC0;
@@ -448,6 +450,8 @@ static int kxtf9_init(void *mlsl_handle,
 	result = kxtf9_set_dur(mlsl_handle, pdata, &private_data->resume,
 			FALSE,  2540);
 	ERROR_CHECK(result);
+	
+	printk("IN: %s at 2 with %d", __FUNCTION__, result);
 
 	result = kxtf9_set_odr(mlsl_handle, pdata, &private_data->suspend,
 			FALSE, 50000);
@@ -455,12 +459,16 @@ static int kxtf9_init(void *mlsl_handle,
 	result = kxtf9_set_odr(mlsl_handle, pdata, &private_data->resume,
 			FALSE, 200000);
 
+    printk("IN: %s at 3 with %d", __FUNCTION__, result);
+
 	result = kxtf9_set_fsr(mlsl_handle, pdata, &private_data->suspend,
 			FALSE, 2000);
 	ERROR_CHECK(result);
 	result = kxtf9_set_fsr(mlsl_handle, pdata, &private_data->resume,
 			FALSE, 2000);
 	ERROR_CHECK(result);
+	
+	printk("IN: %s at 4 with %d", __FUNCTION__, result);
 
 	result = kxtf9_set_ths(mlsl_handle, pdata, &private_data->suspend,
 			FALSE, 80);
@@ -468,6 +476,8 @@ static int kxtf9_init(void *mlsl_handle,
 	result = kxtf9_set_ths(mlsl_handle, pdata, &private_data->resume,
 			FALSE, 40);
 	ERROR_CHECK(result);
+	
+	printk("IN: %s at 5 with %d", __FUNCTION__, result);
 
 	result = kxtf9_set_irq(mlsl_handle, pdata, &private_data->suspend,
 			FALSE,

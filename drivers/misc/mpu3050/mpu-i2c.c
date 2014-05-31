@@ -34,6 +34,7 @@ int sensor_i2c_write(struct i2c_adapter *i2c_adap,
 		     unsigned char address,
 		     unsigned int len, unsigned char const *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct i2c_msg msgs[1];
 	int res;
 
@@ -56,6 +57,7 @@ int sensor_i2c_write_register(struct i2c_adapter *i2c_adap,
 			      unsigned char address,
 			      unsigned char reg, unsigned char value)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char data[2];
 
 	data[0] = reg;
@@ -68,6 +70,7 @@ int sensor_i2c_read(struct i2c_adapter *i2c_adap,
 		    unsigned char reg,
 		    unsigned int len, unsigned char *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct i2c_msg msgs[2];
 	int res;
 
@@ -96,6 +99,7 @@ int mpu_memory_read(struct i2c_adapter *i2c_adap,
 		    unsigned short mem_addr,
 		    unsigned int len, unsigned char *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char bank[2];
 	unsigned char addr[2];
 	unsigned char buf;
@@ -147,6 +151,7 @@ int mpu_memory_write(struct i2c_adapter *i2c_adap,
 		     unsigned short mem_addr,
 		     unsigned int len, unsigned char const *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char bank[2];
 	unsigned char addr[2];
 	unsigned char buf[513];

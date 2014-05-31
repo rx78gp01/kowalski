@@ -85,6 +85,7 @@ static struct mpuaccel_data* pThisData = NULL;
 static void
 mpu_accel_print_mldl_cfg(struct mldl_cfg *mldl_cfg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     if (MPUACC_DEBUG_CFG) {
         printk("requested_sensors:%ld\n", mldl_cfg->requested_sensors);
 //    printk("ignore_system_suspend:%d\n", mldl_cfg->ignore_system_suspend);
@@ -112,7 +113,7 @@ static int
 mpu_accel_mutex_lock(struct mpuaccel_data *data)
 {
     mutex_lock(&data->data_mutex);
-
+    printk("ENTER : %s\n", __FUNCTION__);
     return ML_SUCCESS;
 }
 
@@ -120,7 +121,7 @@ static int
 mpu_accel_mutex_unlock(struct mpuaccel_data *data)
 {
     mutex_unlock(&data->data_mutex);
-
+    printk("ENTER : %s\n", __FUNCTION__);
     return ML_SUCCESS;
 }
 
@@ -128,6 +129,7 @@ mpu_accel_mutex_unlock(struct mpuaccel_data *data)
 static int
 mpu_accel_activate_device(struct mpuaccel_data *data, int enable)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int result = ML_SUCCESS;
     struct mldl_cfg* mldl_cfg = data->mldl_cfg;
 
@@ -162,6 +164,7 @@ mpu_accel_activate_device(struct mpuaccel_data *data, int enable)
 static int
 mpu_accel_get_data_from_device(struct mpuaccel_data *data, unsigned char* buffer)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int result = ML_SUCCESS;
     struct mldl_cfg* mldl_cfg = data->mldl_cfg;
 
@@ -179,6 +182,7 @@ mpu_accel_get_data_from_device(struct mpuaccel_data *data, unsigned char* buffer
 static int
 mpu_accel_get_data_from_mpu(struct mpuaccel_data *data, unsigned char* buffer)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int result = ML_SUCCESS;
     struct mldl_cfg* mldl_cfg = data->mldl_cfg;
     result = MLSLSerialRead(data->accel_handle,mldl_cfg->addr,0x23, 6, buffer);
@@ -189,6 +193,7 @@ mpu_accel_get_data_from_mpu(struct mpuaccel_data *data, unsigned char* buffer)
 static int
 mpu_accel_get_data(struct mpuaccel_data *data, unsigned char* buffer, int* from_mpu)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int res = ML_SUCCESS;
     struct mldl_cfg* mldl_cfg = data->mldl_cfg;
 
@@ -221,6 +226,7 @@ mpu_accel_get_data(struct mpuaccel_data *data, unsigned char* buffer, int* from_
 static int
 mpu_accel_build_data(struct mpuaccel_data *data, const unsigned char* buffer,int* val)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct mldl_cfg* mldl_cfg = data->mldl_cfg;
     int endian = mldl_cfg->accel->endian;
     int dev_id = mldl_cfg->accel->id;
@@ -245,6 +251,7 @@ mpu_accel_build_data(struct mpuaccel_data *data, const unsigned char* buffer,int
 static void
 mpu_accel_input_work_func(struct work_struct *work)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int res = 0;
     int poll_time = 0;
     int enable = 0;
@@ -356,6 +363,7 @@ mpu_accel_input_work_func(struct work_struct *work)
 static int
 mpu_accel_enable(struct mpuaccel_data *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int res = ML_SUCCESS;
     struct mldl_cfg* mldl_cfg = data->mldl_cfg;
 
@@ -390,6 +398,7 @@ mpu_accel_enable(struct mpuaccel_data *data)
 static int
 mpu_accel_disable(struct mpuaccel_data *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int res = ML_SUCCESS;
     struct mldl_cfg* mldl_cfg = data->mldl_cfg;
 
@@ -426,6 +435,7 @@ mpu_accel_delay_show(struct device *dev,
                      struct device_attribute *attr,
                      char *buf)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct input_dev *input_data = to_input_dev(dev);
     struct mpuaccel_data *data = input_get_drvdata(input_data);
 
@@ -438,6 +448,7 @@ mpu_accel_delay_store(struct device *dev,
                       const char *buf,
                       size_t count)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct input_dev *input_data = to_input_dev(dev);
     struct mpuaccel_data *data = input_get_drvdata(input_data);
     int value = simple_strtoul(buf, NULL, 10);
@@ -451,6 +462,7 @@ mpu_accel_enable_show(struct device *dev,
                       struct device_attribute *attr,
                       char *buf)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct input_dev *input_data = to_input_dev(dev);
     struct mpuaccel_data *data = input_get_drvdata(input_data);
 
@@ -463,6 +475,7 @@ mpu_accel_enable_store(struct device *dev,
                        const char *buf,
                        size_t count)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct input_dev *input_data = to_input_dev(dev);
     struct mpuaccel_data *data = input_get_drvdata(input_data);
     int value;
@@ -490,6 +503,7 @@ mpu_accel_enable_store(struct device *dev,
 int
 mpu_accel_is_active_device(void)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int is_active = 0;
 
     if (pThisData!=NULL) {
@@ -504,6 +518,7 @@ mpu_accel_is_active_device(void)
 #ifdef MPUACC_USES_CACHED_DATA
 int mpu_accel_get_cached_data(unsigned char* cache)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int res = ML_ERROR;
 
     if (pThisData!=NULL) {
@@ -550,7 +565,7 @@ EXPORT_SYMBOL(accel_cal_value);
 EXPORT_SYMBOL(accel_cal_complete);
 
 int mpu_accel_read_accel_raw_data(void *sl_handle, unsigned char slaveAddr, unsigned char registerAddr, unsigned short length, unsigned char *data){
-
+    printk("ENTER : %s\n", __FUNCTION__);
     unsigned short bytesRead = 0;
     int result = 0;
     while (bytesRead < length) {
@@ -566,6 +581,7 @@ int mpu_accel_read_accel_raw_data(void *sl_handle, unsigned char slaveAddr, unsi
 }
 bool mpu_accel_check_difference_previous_value(accel_cal_value_type current_value, int is_first)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     static accel_cal_value_type previous_value;	
     unsigned int accel_data_difference = 0;
     int *ptr_prev = &previous_value;
@@ -594,6 +610,7 @@ bool mpu_accel_check_difference_previous_value(accel_cal_value_type current_valu
 }
 bool mpu_accel_sum_value(struct mpuaccel_data* data, int count)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int i;
     unsigned char buf[6] = {0, 0, 0, 0, 0, 0};
     accel_cal_value_type temp_value = {0, 0, 0};
@@ -649,7 +666,7 @@ bool mpu_accel_sum_value(struct mpuaccel_data* data, int count)
 
 void mpu_accel_get_cal_value(struct mpuaccel_data *data, int count)
 {
-    printk("duekgi.shin ENTER : %s\n", __FUNCTION__);
+    printk("ENTER : %s\n", __FUNCTION__);
 
     accel_cal_value.value_x = accel_cal_value.value_x / count;
     accel_cal_value.value_y = accel_cal_value.value_y / count;
@@ -671,6 +688,7 @@ void mpu_accel_get_cal_value(struct mpuaccel_data *data, int count)
 
 bool mpu_accel_calibrate(struct mpuaccel_data *data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     bool result = 0;
     printk("duekgi.shin ENTER : %s\n", __FUNCTION__);
 
@@ -692,7 +710,7 @@ bool mpu_accel_calibrate(struct mpuaccel_data *data)
 
 static ssize_t mpu_accel_cal_start_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
-    printk("duekgi.shin ENTER : %s\n", __FUNCTION__);
+    printk("ENTER : %s\n", __FUNCTION__);
 
     return sprintf(buf, "%d\n", accel_cal_start);
 }
@@ -705,7 +723,7 @@ static ssize_t mpu_accel_cal_start_store(struct device *dev, struct device_attri
 
     unsigned long input_value = simple_strtoul(buf, NULL, 10);
 
-    printk("duekgi.shin ENTER : %s\n", __FUNCTION__);
+    printk("ENTER : %s\n", __FUNCTION__);
 	
     if( (input_value == 1) && (accel_cal_start == false) ){
         accel_cal_start = true;
@@ -730,13 +748,13 @@ static ssize_t mpu_accel_cal_value_x_show(struct device *dev, struct device_attr
 #if defined (CONFIG_MACH_BSSQ)
 static ssize_t mpu_accel_cal_value_x_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct input_dev *input_data = to_input_dev(dev);
     struct mpuaccel_data *data = input_get_drvdata(input_data);
     bool result = false;
 //20111204 bg80.song@lge.com Enable CAL Data Appling Flag [S]
     long input_value = simple_strtol(buf, NULL, 10);
 
-    printk("duekgi.shin ENTER : %s\n", __FUNCTION__);
     printk("duekgi.shin mpu_accel_cal_value_x_store ENTER : %s, input_value = %ld \n", __FUNCTION__, input_value);
 	
     accel_cal_value.value_x = (int) input_value;
@@ -749,12 +767,14 @@ static ssize_t mpu_accel_cal_value_x_store(struct device *dev, struct device_att
 
 static ssize_t mpu_accel_cal_value_y_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     return sprintf(buf, "%d\n", accel_cal_value.value_y);
 }
 
 #if defined (CONFIG_MACH_BSSQ)
 static ssize_t mpu_accel_cal_value_y_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct input_dev *input_data = to_input_dev(dev);
     struct mpuaccel_data *data = input_get_drvdata(input_data);
     bool result = false;
@@ -774,12 +794,14 @@ static ssize_t mpu_accel_cal_value_y_store(struct device *dev, struct device_att
 
 static ssize_t mpu_accel_cal_value_z_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     return sprintf(buf, "%d\n", accel_cal_value.value_z);
 }
 
 #if defined (CONFIG_MACH_BSSQ)
 static ssize_t mpu_accel_cal_value_z_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct input_dev *input_data = to_input_dev(dev);
     struct mpuaccel_data *data = input_get_drvdata(input_data);
     bool result = false;
@@ -799,6 +821,7 @@ static ssize_t mpu_accel_cal_value_z_store(struct device *dev, struct device_att
 
 static ssize_t mpu_accel_cal_result_show(struct device *dev, struct device_attribute *attr, char *buf)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     return sprintf(buf, "%d\n", accel_cal_result);
 }
 
@@ -859,6 +882,7 @@ static struct attribute_group mpuaccel_attribute_group = {
 int
 mpu_accel_init(struct mldl_cfg* mldl_cfg, void* accel_handle)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct input_dev *input_data = NULL;
     struct mpuaccel_data *data = NULL;
     int res = 0;
@@ -944,6 +968,7 @@ err:
 int
 mpu_accel_exit(struct mldl_cfg* mldl_cfg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     struct mpuaccel_data *data = NULL;
 
     if (mldl_cfg==NULL) return ML_ERROR;
@@ -967,6 +992,7 @@ mpu_accel_exit(struct mldl_cfg* mldl_cfg)
 int
 mpu_accel_suspend(struct mldl_cfg* mldl_cfg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int result = ML_SUCCESS;
     int enable = 0;
     struct mpuaccel_data *data = NULL;
@@ -989,6 +1015,7 @@ mpu_accel_suspend(struct mldl_cfg* mldl_cfg)
 int
 mpu_accel_resume(struct mldl_cfg* mldl_cfg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int result = ML_SUCCESS;
     int enable = 0;
     struct mpuaccel_data *data = NULL;
@@ -1011,6 +1038,7 @@ mpu_accel_resume(struct mldl_cfg* mldl_cfg)
 int
 mpu_accel_read(struct mldl_cfg* mldl_cfg, unsigned char* buffer)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
     int result = ML_SUCCESS;
     int enable = 0;
     struct mpuaccel_data *data = NULL;

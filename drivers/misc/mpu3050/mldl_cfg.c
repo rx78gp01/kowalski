@@ -81,6 +81,7 @@
 
 static int dmp_stop(struct mldl_cfg *mldl_cfg, void *gyro_handle)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char userCtrlReg;
 	int result;
 
@@ -108,6 +109,7 @@ static int dmp_stop(struct mldl_cfg *mldl_cfg, void *gyro_handle)
  */
 static int dmp_start(struct mldl_cfg *pdata, void *mlsl_handle)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char userCtrlReg;
 	int result;
 
@@ -163,6 +165,7 @@ static int MLDLSetI2CBypass(struct mldl_cfg *mldl_cfg,
 			    void *mlsl_handle,
 			    unsigned char enable)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char b;
 	int result;
 
@@ -303,6 +306,7 @@ static struct tsProdRevMap prodRevsMap[] = {
 static int MLDLGetSiliconRev(struct mldl_cfg *pdata,
 			     void *mlsl_handle)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int result;
 	unsigned char index = 0x00;
 	unsigned char bank =
@@ -370,6 +374,7 @@ static int MLDLSetLevelShifterBit(struct mldl_cfg *pdata,
 				  void *mlsl_handle,
 				  unsigned char enable)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 #ifndef M_HW
 	int result;
 	unsigned char reg;
@@ -422,6 +427,7 @@ static tMLError mpu60xx_pwr_mgmt(struct mldl_cfg *pdata,
 				 unsigned char reset,
 				 unsigned char powerselection)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char b;
 	tMLError result;
 
@@ -471,6 +477,7 @@ static tMLError MLDLStandByGyros(struct mldl_cfg *pdata,
 				 unsigned char disable_gy,
 				 unsigned char disable_gz)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char b;
 	tMLError result;
 
@@ -498,6 +505,7 @@ static tMLError MLDLStandByAccels(struct mldl_cfg *pdata,
 				  unsigned char disable_ay,
 				  unsigned char disable_az)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char b;
 	tMLError result;
 
@@ -563,6 +571,7 @@ static int MLDLPowerMgmtMPU(struct mldl_cfg *pdata,
 			    unsigned char disable_gy,
 			    unsigned char disable_gz)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	unsigned char b;
 	int result;
 
@@ -676,6 +685,7 @@ static int MLDLPowerMgmtMPU(struct mldl_cfg *pdata,
 
 void mpu_print_cfg(struct mldl_cfg *mldl_cfg)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu3050_platform_data *pdata = mldl_cfg->pdata;
 	struct ext_slave_platform_data *accel = &mldl_cfg->pdata->accel;
 	struct ext_slave_platform_data *compass =
@@ -854,6 +864,7 @@ int mpu_set_slave(struct mldl_cfg *mldl_cfg,
 		struct ext_slave_descr *slave,
 		struct ext_slave_platform_data *slave_pdata)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	int result;
 	unsigned char reg;
 	unsigned char slave_reg;
@@ -941,6 +952,7 @@ int mpu_set_slave(struct mldl_cfg *mldl_cfg,
  */
 static int mpu_was_reset(struct mldl_cfg *mldl_cfg, void *gyro_handle)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	int result = ML_SUCCESS;
 	unsigned char reg;
 
@@ -969,6 +981,7 @@ static int mpu_was_reset(struct mldl_cfg *mldl_cfg, void *gyro_handle)
 
 static int gyro_resume(struct mldl_cfg *mldl_cfg, void *gyro_handle)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	int result;
 	int ii;
 	int jj;
@@ -1143,9 +1156,12 @@ int mpu3050_open(struct mldl_cfg *mldl_cfg,
 		 void *compass_handle,
 		 void *pressure_handle)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	int result;
 	/* Default is Logic HIGH, pushpull, latch disabled, anyread to clear */
+#ifndef CONFIG_MACH_STAR
 	mldl_cfg->ignore_system_suspend = FALSE;
+#endif
 	mldl_cfg->int_config = BIT_INT_ANYRD_2CLEAR | BIT_DMP_INT_EN;
 	mldl_cfg->clk_src = MPU_CLK_SEL_PLLGYROZ;
 	mldl_cfg->lpf = MPU_FILTER_42HZ;
@@ -1183,14 +1199,17 @@ int mpu3050_open(struct mldl_cfg *mldl_cfg,
 #else
 	result = MLDLPowerMgmtMPU(mldl_cfg, mlsl_handle, RESET, 0, 0, 0, 0);
 #endif
+    printk("In: %s at: 1 with %d\n", __FUNCTION__, result);
 	ERROR_CHECK(result);
 
 	result = MLDLGetSiliconRev(mldl_cfg, mlsl_handle);
+	printk("In: %s at: 2 with %d\n", __FUNCTION__, result);
 	ERROR_CHECK(result);
 #ifndef M_HW
 	result = MLSLSerialRead(mlsl_handle, mldl_cfg->addr,
 				MPUREG_PRODUCT_ID, 1,
 				&mldl_cfg->product_id);
+	printk("In: %s at: 3 with %d\n", __FUNCTION__, result);
 	ERROR_CHECK(result);
 #endif
 
@@ -1198,14 +1217,17 @@ int mpu3050_open(struct mldl_cfg *mldl_cfg,
 	result = MLSLSerialRead(mlsl_handle, mldl_cfg->addr,
 				MPUREG_XG_OFFS_TC, 1,
 				&mldl_cfg->offset_tc[0]);
+	printk("In: %s at: 4 with %d\n", __FUNCTION__, result);
 	ERROR_CHECK(result);
 	result = MLSLSerialRead(mlsl_handle, mldl_cfg->addr,
 				MPUREG_YG_OFFS_TC, 1,
 				&mldl_cfg->offset_tc[1]);
+	printk("In: %s at: 5 with %d\n", __FUNCTION__, result);
 	ERROR_CHECK(result);
 	result = MLSLSerialRead(mlsl_handle, mldl_cfg->addr,
 				MPUREG_ZG_OFFS_TC, 1,
 				&mldl_cfg->offset_tc[2]);
+	printk("In: %s at: 6 with %d\n", __FUNCTION__, result);
 	ERROR_CHECK(result);
 
 	/* Configure the MPU */
@@ -1216,12 +1238,15 @@ int mpu3050_open(struct mldl_cfg *mldl_cfg,
 	result =
 	    MLDLPowerMgmtMPU(mldl_cfg, mlsl_handle, 0, SLEEP, 0, 0, 0);
 #endif
+    printk("In: %s at: 7 with %d\n", __FUNCTION__, result);
 	ERROR_CHECK(result);
 
 	if (mldl_cfg->accel && mldl_cfg->accel->init) {
 		result = mldl_cfg->accel->init(accel_handle,
 					       mldl_cfg->accel,
 					       &mldl_cfg->pdata->accel);
+					        
+		printk("In: %s at: 8 with %d\n", __FUNCTION__, result);
 		ERROR_CHECK(result);
 	}
 
@@ -1229,9 +1254,11 @@ int mpu3050_open(struct mldl_cfg *mldl_cfg,
 		result = mldl_cfg->compass->init(compass_handle,
 						 mldl_cfg->compass,
 						 &mldl_cfg->pdata->compass);
+		printk("In: %s at: 9 with %d\n", __FUNCTION__, result);
 		if (ML_SUCCESS != result) {
 			MPL_LOGE("mldl_cfg->compass->init returned %d\n",
 				result);
+		    printk("In: %s at: 10 with %d\n", __FUNCTION__, result);
 			goto out_accel;
 		}
 	}
@@ -1239,9 +1266,11 @@ int mpu3050_open(struct mldl_cfg *mldl_cfg,
 		result = mldl_cfg->pressure->init(pressure_handle,
 						  mldl_cfg->pressure,
 						  &mldl_cfg->pdata->pressure);
+		printk("In: %s at: 11 with %d\n", __FUNCTION__, result);
 		if (ML_SUCCESS != result) {
 			MPL_LOGE("mldl_cfg->pressure->init returned %d\n",
 				result);
+			printk("In: %s at: 12 with %d\n", __FUNCTION__, result);
 			goto out_compass;
 		}
 	}
@@ -1256,6 +1285,7 @@ int mpu3050_open(struct mldl_cfg *mldl_cfg,
 	if (mldl_cfg->pressure && mldl_cfg->pressure->resume)
 		mldl_cfg->requested_sensors |= ML_THREE_AXIS_PRESSURE;
 
+    printk("In: %s at: 13 with %d\n", __FUNCTION__, result);
 	return result;
 
 out_compass:
@@ -1268,6 +1298,8 @@ out_accel:
 		mldl_cfg->accel->exit(accel_handle,
 				mldl_cfg->accel,
 				&mldl_cfg->pdata->accel);
+				
+printk("RETURN: %d in %s\n",result, __FUNCTION__);
 	return result;
 
 }
@@ -1286,6 +1318,7 @@ int mpu3050_close(struct mldl_cfg *mldl_cfg,
 		  void *compass_handle,
 		  void *pressure_handle)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	int result = ML_SUCCESS;
 	int ret_result = ML_SUCCESS;
 
@@ -1374,6 +1407,7 @@ int mpu3050_resume(struct mldl_cfg *mldl_cfg,
 		   bool resume_compass,
 		   bool resume_pressure)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	int result = ML_SUCCESS;
 
 #ifdef CONFIG_MPU_SENSORS_DEBUG
@@ -1523,6 +1557,7 @@ int mpu3050_suspend(struct mldl_cfg *mldl_cfg,
 		    bool suspend_compass,
 		    bool suspend_pressure)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	int result = ML_SUCCESS;
 
 	if (suspend_gyro && !mldl_cfg->gyro_is_suspended) {
@@ -1603,6 +1638,7 @@ int mpu3050_suspend(struct mldl_cfg *mldl_cfg,
 int mpu3050_read_accel(struct mldl_cfg *mldl_cfg,
 		       void *accel_handle, unsigned char *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->accel && NULL != mldl_cfg->accel->read)
 		if ((EXT_SLAVE_BUS_SECONDARY == mldl_cfg->pdata->accel.bus)
 			&& (!mldl_cfg->gyro_is_bypassed))
@@ -1630,6 +1666,7 @@ int mpu3050_read_accel(struct mldl_cfg *mldl_cfg,
 int mpu3050_read_compass(struct mldl_cfg *mldl_cfg,
 			 void *compass_handle, unsigned char *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->compass && NULL != mldl_cfg->compass->read)
 		if ((EXT_SLAVE_BUS_SECONDARY == mldl_cfg->pdata->compass.bus)
 			&& (!mldl_cfg->gyro_is_bypassed))
@@ -1657,6 +1694,7 @@ int mpu3050_read_compass(struct mldl_cfg *mldl_cfg,
 int mpu3050_read_pressure(struct mldl_cfg *mldl_cfg,
 			 void *pressure_handle, unsigned char *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->pressure && NULL != mldl_cfg->pressure->read)
 		if ((EXT_SLAVE_BUS_SECONDARY == mldl_cfg->pdata->pressure.bus)
 			&& (!mldl_cfg->gyro_is_bypassed))
@@ -1675,6 +1713,7 @@ int mpu3050_config_accel(struct mldl_cfg *mldl_cfg,
 			void *accel_handle,
 			struct ext_slave_config *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->accel && NULL != mldl_cfg->accel->config)
 		return mldl_cfg->accel->config(accel_handle,
 					       mldl_cfg->accel,
@@ -1689,6 +1728,7 @@ int mpu3050_config_compass(struct mldl_cfg *mldl_cfg,
 			void *compass_handle,
 			struct ext_slave_config *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->compass && NULL != mldl_cfg->compass->config)
 		return mldl_cfg->compass->config(compass_handle,
 						 mldl_cfg->compass,
@@ -1703,6 +1743,7 @@ int mpu3050_config_pressure(struct mldl_cfg *mldl_cfg,
 			void *pressure_handle,
 			struct ext_slave_config *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->pressure && NULL != mldl_cfg->pressure->config)
 		return mldl_cfg->pressure->config(pressure_handle,
 						  mldl_cfg->pressure,
@@ -1716,6 +1757,7 @@ int mpu3050_get_config_accel(struct mldl_cfg *mldl_cfg,
 			void *accel_handle,
 			struct ext_slave_config *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->accel && NULL != mldl_cfg->accel->get_config)
 		return mldl_cfg->accel->get_config(accel_handle,
 						mldl_cfg->accel,
@@ -1730,6 +1772,7 @@ int mpu3050_get_config_compass(struct mldl_cfg *mldl_cfg,
 			void *compass_handle,
 			struct ext_slave_config *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->compass && NULL != mldl_cfg->compass->get_config)
 		return mldl_cfg->compass->get_config(compass_handle,
 						mldl_cfg->compass,
@@ -1744,6 +1787,7 @@ int mpu3050_get_config_pressure(struct mldl_cfg *mldl_cfg,
 				void *pressure_handle,
 				struct ext_slave_config *data)
 {
+printk("ENTER : %s\n", __FUNCTION__);
 	if (NULL != mldl_cfg->pressure &&
 	    NULL != mldl_cfg->pressure->get_config)
 		return mldl_cfg->pressure->get_config(pressure_handle,

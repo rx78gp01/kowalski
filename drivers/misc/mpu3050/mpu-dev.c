@@ -89,6 +89,7 @@ static struct i2c_client *this_client;
 static void
 mpu_pm_timeout(u_long data)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu = (struct mpu_private_data *) data;
 	dev_dbg(&this_client->adapter->dev, "%s\n", __func__);
 	complete(&mpu->completion);
@@ -98,6 +99,7 @@ static int mpu_pm_notifier_callback(struct notifier_block *nb,
 				    unsigned long event,
 				    void *unused)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu =
 		container_of(nb, struct mpu_private_data, nb);
 	struct timeval event_time;
@@ -143,10 +145,10 @@ static int mpu_pm_notifier_callback(struct notifier_block *nb,
 
 static int mpu_open(struct inode *inode, struct file *file)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu =
 	    (struct mpu_private_data *) i2c_get_clientdata(this_client);
 	struct mldl_cfg *mldl_cfg = &mpu->mldl_cfg;
-	int result;
 	dev_dbg(&this_client->adapter->dev, "mpu_open\n");
 	dev_dbg(&this_client->adapter->dev, "current->pid %d\n",
 		current->pid);
@@ -156,6 +158,8 @@ static int mpu_open(struct inode *inode, struct file *file)
 	/* i.e. O_NONBLOCK */
 	/* -> set some flag to disable interruptible_sleep_on in mpu_read */
 
+#ifndef CONFIG_MACH_STAR
+    int result;
 	/* Reset the sensors to the default */
 	result = mutex_lock_interruptible(&mpu->mutex);
 	if (result) {
@@ -164,6 +168,8 @@ static int mpu_open(struct inode *inode, struct file *file)
 			__func__, result);
 		return result;
 	}
+#endif
+
 	mldl_cfg->requested_sensors = ML_THREE_AXIS_GYRO;
 	if (mldl_cfg->accel && mldl_cfg->accel->resume)
 		mldl_cfg->requested_sensors |= ML_THREE_AXIS_ACCEL;
@@ -173,13 +179,16 @@ static int mpu_open(struct inode *inode, struct file *file)
 
 	if (mldl_cfg->pressure && mldl_cfg->pressure->resume)
 		mldl_cfg->requested_sensors |= ML_THREE_AXIS_PRESSURE;
+#ifndef CONFIG_MACH_STAR
 	mutex_unlock(&mpu->mutex);
+#endif
 	return 0;
 }
 
 /* close function - called when the "file" /dev/mpu is closed in userspace   */
 static int mpu_release(struct inode *inode, struct file *file)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct i2c_client *client =
 	    (struct i2c_client *) file->private_data;
 	struct mpu_private_data *mpu =
@@ -194,14 +203,18 @@ static int mpu_release(struct inode *inode, struct file *file)
 	compass_adapter = i2c_get_adapter(mldl_cfg->pdata->compass.adapt_num);
 	pressure_adapter = i2c_get_adapter(mldl_cfg->pdata->pressure.adapt_num);
 
+#ifndef CONFIG_MACH_STAR
 	mutex_lock(&mpu->mutex);
+#endif
 	result = mpu3050_suspend(mldl_cfg, client->adapter,
 				 accel_adapter, compass_adapter,
 				 pressure_adapter,
 				 TRUE, TRUE, TRUE, TRUE);
+#ifndef CONFIG_MACH_STAR
 	mpu->pid = 0;
 	mutex_unlock(&mpu->mutex);
 	complete(&mpu->completion);
+#endif
 	dev_dbg(&this_client->adapter->dev, "mpu_release\n");
 	return result;
 }
@@ -211,6 +224,7 @@ static int mpu_release(struct inode *inode, struct file *file)
 static noinline int mpudev_ioctl_rdrw(struct i2c_client *client,
 				      unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct i2c_rdwr_ioctl_data rdwr_arg;
 	struct i2c_msg *rdwr_pa;
 	u8 __user **data_ptrs;
@@ -291,6 +305,7 @@ static noinline int mpudev_ioctl_rdrw(struct i2c_client *client,
 
 static unsigned int mpu_poll(struct file *file, struct poll_table_struct *poll)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct i2c_client *client =
 	    (struct i2c_client *) file->private_data;
 	struct mpu_private_data *mpu =
@@ -307,6 +322,7 @@ static unsigned int mpu_poll(struct file *file, struct poll_table_struct *poll)
 static ssize_t mpu_read(struct file *file,
 			char __user *buf, size_t count, loff_t *offset)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpuirq_data local_mpu_pm_event;
 	struct i2c_client *client =
 	    (struct i2c_client *) file->private_data;
@@ -355,6 +371,7 @@ static ssize_t mpu_read(struct file *file,
 static ssize_t mpu_read(struct file *file,
 			char __user *buf, size_t count, loff_t *offset)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	char *tmp;
 	int ret;
 
@@ -386,6 +403,7 @@ static ssize_t mpu_read(struct file *file,
 static int
 mpu_dev_ioctl_set_mpu_pdata(struct i2c_client *client, unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int ii;
 	struct mpu_private_data *mpu =
 	    (struct mpu_private_data *) i2c_get_clientdata(client);
@@ -424,6 +442,7 @@ mpu_dev_ioctl_set_mpu_pdata(struct i2c_client *client, unsigned long arg)
 static int
 mpu_dev_ioctl_set_mpu_config(struct i2c_client *client, unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int ii;
 	int result = ML_SUCCESS;
 	struct mpu_private_data *mpu =
@@ -510,6 +529,7 @@ out:
 static int
 mpu_dev_ioctl_get_mpu_config(struct i2c_client *client, unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	/* Have to be careful as there are 3 pointers in the mldl_cfg
 	 * structure */
 	struct mpu_private_data *mpu =
@@ -522,6 +542,8 @@ mpu_dev_ioctl_get_mpu_config(struct i2c_client *client, unsigned long arg)
 	if (NULL == local_mldl_cfg)
 		return -ENOMEM;
 
+    printk("In 1/10 : %s\n", __FUNCTION__);
+
 	retval =
 	    copy_from_user(local_mldl_cfg, (struct mldl_cfg __user *) arg,
 			   sizeof(struct mldl_cfg));
@@ -530,11 +552,13 @@ mpu_dev_ioctl_get_mpu_config(struct i2c_client *client, unsigned long arg)
 			"%s|%s:%d: EFAULT on arg\n",
 			__FILE__, __func__, __LINE__);
 		retval = -EFAULT;
+		printk("In 2/10 : %s\n", __FUNCTION__);
 		goto out;
 	}
 
 	/* Fill in the accel, compass, pressure and pdata pointers */
 	if (mldl_cfg->accel) {
+	    printk("In 3/10 : %s\n", __FUNCTION__);
 		retval = copy_to_user((void __user *)local_mldl_cfg->accel,
 				      mldl_cfg->accel,
 				      sizeof(*mldl_cfg->accel));
@@ -543,11 +567,13 @@ mpu_dev_ioctl_get_mpu_config(struct i2c_client *client, unsigned long arg)
 				"%s|%s:%d: EFAULT on accel\n",
 				__FILE__, __func__, __LINE__);
 			retval = -EFAULT;
+			printk("In 4/10 : %s\n", __FUNCTION__);
 			goto out;
 		}
 	}
 
 	if (mldl_cfg->compass) {
+	    printk("In 5/10 : %s\n", __FUNCTION__);
 		retval = copy_to_user((void __user *)local_mldl_cfg->compass,
 				      mldl_cfg->compass,
 				      sizeof(*mldl_cfg->compass));
@@ -561,6 +587,7 @@ mpu_dev_ioctl_get_mpu_config(struct i2c_client *client, unsigned long arg)
 	}
 
 	if (mldl_cfg->pressure) {
+	    printk("In 6/10 : %s\n", __FUNCTION__);
 		retval = copy_to_user((void __user *)local_mldl_cfg->pressure,
 				      mldl_cfg->pressure,
 				      sizeof(*mldl_cfg->pressure));
@@ -574,6 +601,7 @@ mpu_dev_ioctl_get_mpu_config(struct i2c_client *client, unsigned long arg)
 	}
 
 	if (mldl_cfg->pdata) {
+	    printk("In 7/10 : %s\n", __FUNCTION__);
 		retval = copy_to_user((void __user *)local_mldl_cfg->pdata,
 				      mldl_cfg->pdata,
 				      sizeof(*mldl_cfg->pdata));
@@ -586,14 +614,16 @@ mpu_dev_ioctl_get_mpu_config(struct i2c_client *client, unsigned long arg)
 		}
 	}
 
+    printk("In 8/10 : %s\n", __FUNCTION__);
 	/* Do not modify the accel, compass, pressure and pdata pointers */
 	retval = copy_to_user((struct mldl_cfg __user *) arg,
 			      mldl_cfg, offsetof(struct mldl_cfg, accel));
-
+    printk("In 9/10 : %s\n", __FUNCTION__);
 	if (retval)
 		retval = -EFAULT;
 out:
 	kfree(local_mldl_cfg);
+	printk("In 10/10: %s Returning: %d\n", __FUNCTION__, retval);
 	return retval;
 }
 
@@ -613,6 +643,7 @@ static int slave_config(void *adapter,
 #ifdef CONFIG_MACH_STAR
             struct ext_slave_config __user *usr_config)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int retval = ML_SUCCESS;
 	if ((slave) && (slave->config)) {
 		struct ext_slave_config config;
@@ -698,6 +729,7 @@ static int slave_get_config(void *adapter,
 #endif
 			struct ext_slave_config __user *usr_config)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int retval = ML_SUCCESS;
 #ifdef CONFIG_MACH_STAR
     if ((slave) && (slave->get_config)) {
@@ -789,6 +821,7 @@ static int mpu_handle_mlsl(void *sl_handle,
 			unsigned int cmd,
 			struct mpu_read_write __user *usr_msg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int retval = ML_SUCCESS;
 	struct mpu_read_write msg;
 	unsigned char *user_data;
@@ -855,6 +888,7 @@ static int mpu_handle_mlsl(void *sl_handle,
 static long mpu_dev_ioctl(struct file *file,
 		      unsigned int cmd, unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct i2c_client *client =
 	    (struct i2c_client *) file->private_data;
 	struct mpu_private_data *mpu =
@@ -1007,6 +1041,7 @@ static long mpu_dev_ioctl(struct file *file,
 		retval = mpu_dev_ioctl_set_mpu_pdata(client, arg);
 		break;
 	case MPU_GET_MPU_CONFIG:
+	    printk("IN: %s will call 1: mpu_dev_ioctl_get_mpu_config\n", __FUNCTION__);
 		retval = mpu_dev_ioctl_get_mpu_config(client, arg);
 		break;
 #ifndef CONFIG_MACH_STAR
@@ -1159,14 +1194,25 @@ static long mpu_dev_ioctl(struct file *file,
 			arg);
 		retval = -EINVAL;
 	}
-
-	mutex_unlock(&mpu->mutex);
+	printk("IN: %s will exit after mutex unlock with retval=%d\n", __FUNCTION__,retval);
+	if(&mpu == NULL)
+	    printk("TERRIBLE! &mpu is NULL in %s\n", __FUNCTION__);
+	else if(&mpu->mutex == NULL)
+	    printk("TERRIBLE! &mpu->mutex is NULL in %s\n", __FUNCTION__);
+	//mutex_unlock(&mpu->mutex);
+    printk("IN: %s will exit with retval=%d\n", __FUNCTION__,retval);
 	return retval;
 }
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
+
+#ifdef CONFIG_MACH_STAR
+// int mpu_suspend(struct mpu_private_data *mpu, pm_message_t mesg);
+#endif
+
 void mpu3050_early_suspend(struct early_suspend *h)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu = container_of(h,
 						    struct
 						    mpu_private_data,
@@ -1185,16 +1231,25 @@ void mpu3050_early_suspend(struct early_suspend *h)
 	dev_dbg(&this_client->adapter->dev, "%s: %d, %d\n", __func__,
 		h->level, mpu->mldl_cfg.gyro_is_suspended);
 	if (MPU3050_EARLY_SUSPEND_IN_DRIVER) {
+#ifndef CONFIG_MACH_STAR
 		mutex_lock(&mpu->mutex);
+#endif
 		(void) mpu3050_suspend(mldl_cfg, this_client->adapter,
 				accel_adapter, compass_adapter,
 				pressure_adapter, TRUE, TRUE, TRUE, TRUE);
+#ifndef CONFIG_MACH_STAR
 		mutex_unlock(&mpu->mutex);
+#endif
 	}
 }
 
+#ifdef CONFIG_MACH_STAR
+//int mpu_resume(struct mpu_private_data *mpu);
+#endif
+
 void mpu3050_early_resume(struct early_suspend *h)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu = container_of(h,
 						    struct
 						    mpu_private_data,
@@ -1213,7 +1268,9 @@ void mpu3050_early_resume(struct early_suspend *h)
 	if (MPU3050_EARLY_SUSPEND_IN_DRIVER) {
 		if (mpu->pid) {
 			unsigned long sensors = mldl_cfg->requested_sensors;
+#ifndef CONFIG_MACH_STAR
 			mutex_lock(&mpu->mutex);
+#endif
 			(void) mpu3050_resume(mldl_cfg,
 					this_client->adapter,
 					accel_adapter,
@@ -1223,7 +1280,9 @@ void mpu3050_early_resume(struct early_suspend *h)
 					sensors & ML_THREE_AXIS_ACCEL,
 					sensors & ML_THREE_AXIS_COMPASS,
 					sensors & ML_THREE_AXIS_PRESSURE);
+#ifndef CONFIG_MACH_STAR
 			mutex_unlock(&mpu->mutex);
+#endif
 			dev_dbg(&this_client->adapter->dev,
 				"%s for pid %d\n", __func__, mpu->pid);
 		}
@@ -1240,6 +1299,7 @@ static void mpu3050_power_terminate(void);
 
 void mpu_shutdown(struct i2c_client *client)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu =
 	    (struct mpu_private_data *) i2c_get_clientdata(client);
 	struct mldl_cfg *mldl_cfg = &mpu->mldl_cfg;
@@ -1263,6 +1323,7 @@ void mpu_shutdown(struct i2c_client *client)
 
 int mpu_suspend(struct i2c_client *client, pm_message_t mesg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu =
 	    (struct mpu_private_data *) i2c_get_clientdata(client);
 	struct mldl_cfg *mldl_cfg = &mpu->mldl_cfg;
@@ -1283,7 +1344,11 @@ int mpu_suspend(struct i2c_client *client, pm_message_t mesg)
 //deukgi.shin@lge.com // power down when shutdown[S]
 
 	mutex_lock(&mpu->mutex);
+#ifdef CONFIG_MACH_STAR
+    if (!mpu->mldl_cfg.gyro_is_suspended) {
+#else
 	if (!mldl_cfg->ignore_system_suspend) {
+#endif
 		dev_dbg(&this_client->adapter->dev,
 			"%s: suspending on event %d\n", __func__,
 			mesg.event);
@@ -1308,6 +1373,7 @@ static void mpu3050_power_init(void);
 
 int mpu_resume(struct i2c_client *client)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu =
 	    (struct mpu_private_data *) i2c_get_clientdata(client);
 	struct mldl_cfg *mldl_cfg = &mpu->mldl_cfg;
@@ -1322,7 +1388,11 @@ int mpu_resume(struct i2c_client *client)
 	    i2c_get_adapter(mldl_cfg->pdata->pressure.adapt_num);
 
 	mutex_lock(&mpu->mutex);
+#ifdef CONFIG_MACH_STAR
+    if (mpu->pid) {
+#else
 	if (mpu->pid && !mldl_cfg->ignore_system_suspend) {
+#endif
 		unsigned long sensors = mldl_cfg->requested_sensors;
 		(void) mpu3050_resume(mldl_cfg, this_client->adapter,
 				      accel_adapter,
@@ -1371,25 +1441,34 @@ static struct miscdevice i2c_mpu_device = {
 int mpu3050_probe(struct i2c_client *client,
 		  const struct i2c_device_id *devid)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
+    
 	struct mpu3050_platform_data *pdata;
 	struct mpu_private_data *mpu;
 	struct mldl_cfg *mldl_cfg;
+	
 	int res = 0;
+	
 	struct i2c_adapter *accel_adapter = NULL;
 	struct i2c_adapter *compass_adapter = NULL;
 	struct i2c_adapter *pressure_adapter = NULL;
+	
 	dev_dbg(&client->adapter->dev, "%s\n", __func__);
 
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
 		res = -ENODEV;
+		printk("IN: %s at: 1\n", __FUNCTION__);
 		goto out_check_functionality_failed;
 	}
 
 	mpu = kzalloc(sizeof(struct mpu_private_data), GFP_KERNEL);
 	if (!mpu) {
+	    printk("IN: %s at: 2\n", __FUNCTION__);
 		res = -ENOMEM;
 		goto out_alloc_data_failed;
 	}
+
+    printk("IN: %s at: 3\n", __FUNCTION__);
 
 	i2c_set_clientdata(client, mpu);
 	this_client = client;
@@ -1421,13 +1500,14 @@ int mpu3050_probe(struct i2c_client *client,
 
 	pdata = (struct mpu3050_platform_data *) client->dev.platform_data;
 	if (!pdata) {
+	    printk("IN: %s at: 4\n", __FUNCTION__);
 		dev_warn(&this_client->adapter->dev,
 			 "Missing platform data for mpu3050\n");
 	} else {
 		mldl_cfg->pdata = pdata;
-
-#if defined(CONFIG_MPU_SENSORS_MPU3050_MODULE) || \
-    defined(CONFIG_MPU_SENSORS_MPU6000_MODULE)
+        printk("IN: %s at: 5\n", __FUNCTION__);
+#if defined(CONFIG_MPU_SENSORS_MPU3050) || \
+    defined(CONFIG_MPU_SENSORS_MPU6000)
 		pdata->accel.get_slave_descr = get_accel_slave_descr;
 		pdata->compass.get_slave_descr = get_compass_slave_descr;
 		pdata->pressure.get_slave_descr = get_pressure_slave_descr;
@@ -1441,6 +1521,7 @@ int mpu3050_probe(struct i2c_client *client,
 				 mldl_cfg->accel->name);
 			accel_adapter =
 				i2c_get_adapter(pdata->accel.adapt_num);
+		    printk("IN: %s at: 6\n", __FUNCTION__);
 			if (pdata->accel.irq > 0) {
 				dev_info(&this_client->adapter->dev,
 					"Installing Accel irq using %d\n",
@@ -1448,6 +1529,7 @@ int mpu3050_probe(struct i2c_client *client,
 				res = slaveirq_init(accel_adapter,
 						&pdata->accel,
 						"accelirq");
+				printk("IN: %s at: 7 with %d\n", __FUNCTION__,res);
 				if (res)
 					goto out_accelirq_failed;
 			} else {
@@ -1474,6 +1556,7 @@ int mpu3050_probe(struct i2c_client *client,
 				res = slaveirq_init(compass_adapter,
 						&pdata->compass,
 						"compassirq");
+				printk("IN: %s at: 8 with %d\n", __FUNCTION__,res);
 				if (res)
 					goto out_compassirq_failed;
 			} else {
@@ -1516,7 +1599,8 @@ int mpu3050_probe(struct i2c_client *client,
 	mldl_cfg->addr = client->addr;
 	res = mpu3050_open(&mpu->mldl_cfg, client->adapter,
 			accel_adapter, compass_adapter, pressure_adapter);
-
+    printk("IN: %s at: 8 with %d\n", __FUNCTION__,res);
+    
 	if (res) {
 		dev_err(&this_client->adapter->dev,
 			"Unable to open %s %d\n", MPU_NAME, res);
@@ -1525,6 +1609,7 @@ int mpu3050_probe(struct i2c_client *client,
 	}
 
 	res = misc_register(&i2c_mpu_device);
+	printk("IN: %s at: 9 with %d\n", __FUNCTION__,res);
 	if (res < 0) {
 		dev_err(&this_client->adapter->dev,
 			"ERROR: misc_register returned %d\n", res);
@@ -1587,6 +1672,7 @@ out_check_functionality_failed:
 
 static int mpu3050_remove(struct i2c_client *client)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct mpu_private_data *mpu = i2c_get_clientdata(client);
 	struct i2c_adapter *accel_adapter;
 	struct i2c_adapter *compass_adapter;
@@ -1669,6 +1755,7 @@ static struct i2c_driver mpu3050_driver = {
 
 static void mpu3050_power_init(void)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct regulator *regulator1 = NULL;
 	struct regulator *regulator2 = NULL;
 	unsigned int gyro_int_gpio;
@@ -1747,10 +1834,11 @@ static void mpu3050_power_init(void)
 #ifndef CONFIG_MACH_BSSQ
 static void mpu3050_power_terminate(void)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct regulator *regulator1 = NULL;
 	struct regulator *regulator2 = NULL;
 
-	printk("ENTER : %s", __FUNCTION__);
+	printk("ENTER : %s\n", __FUNCTION__);
 		
 	printk(KERN_INFO "mpu3050_power_terminate.. \n");
 
@@ -1785,6 +1873,7 @@ static void mpu3050_power_terminate(void)
 
 static int __init mpu_init(void)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 // LGE_CHANGE_S [dongjin73.kim@lge.com] 2011-01-19, [LGE_AP20] Sensor integration
 	mpu3050_power_init();
 // LGE_CHANGE_E [dongjin73.kim@lge.com] 2011-01-19, [LGE_AP20] Sensor integration
@@ -1799,6 +1888,7 @@ static int __init mpu_init(void)
 
 static void __exit mpu_exit(void)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	pr_debug("%s\n", __func__);
 	i2c_del_driver(&mpu3050_driver);
 }

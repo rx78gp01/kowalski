@@ -62,6 +62,7 @@ struct slaveirq_dev_data {
  */
 static int slaveirq_open(struct inode *inode, struct file *file)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	/* Device node is availabe in the file->private_data, this is
 	 * exactly what we want so we leave it there */
 	struct slaveirq_dev_data *data =
@@ -75,6 +76,7 @@ static int slaveirq_open(struct inode *inode, struct file *file)
 
 static int slaveirq_release(struct inode *inode, struct file *file)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct slaveirq_dev_data *data =
 		container_of(file->private_data, struct slaveirq_dev_data, dev);
 	dev_dbg(data->dev.this_device, "slaveirq_release\n");
@@ -85,13 +87,19 @@ static int slaveirq_release(struct inode *inode, struct file *file)
 static ssize_t slaveirq_read(struct file *file,
 			   char *buf, size_t count, loff_t *ppos)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int len, err;
 	struct slaveirq_dev_data *data =
 		container_of(file->private_data, struct slaveirq_dev_data, dev);
 
+#ifdef CONFIG_MACH_STAR
+    if (!data->data_ready && 
+            data->timeout>0) {
+#else
 	if (!data->data_ready &&
 		data->timeout &&
 		!(file->f_flags & O_NONBLOCK)) {
+#endif
 		wait_event_interruptible_timeout(data->slaveirq_wait,
 						 data->data_ready,
 						 data->timeout);
@@ -117,6 +125,7 @@ static ssize_t slaveirq_read(struct file *file,
 static unsigned int slaveirq_poll(struct file *file,
 				struct poll_table_struct *poll)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int mask = 0;
 	struct slaveirq_dev_data *data =
 		container_of(file->private_data, struct slaveirq_dev_data, dev);
@@ -131,6 +140,7 @@ static unsigned int slaveirq_poll(struct file *file,
 static long slaveirq_ioctl(struct file *file,
 			   unsigned int cmd, unsigned long arg)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	int retval = 0;
 	int tmp;
 	struct slaveirq_dev_data *data =
@@ -163,6 +173,7 @@ static long slaveirq_ioctl(struct file *file,
 
 static irqreturn_t slaveirq_handler(int irq, void *dev_id)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct slaveirq_dev_data *data = (struct slaveirq_dev_data *)dev_id;
 	static int mycount;
 	struct timeval irqtime;
@@ -225,7 +236,9 @@ int slaveirq_init(struct i2c_adapter *slave_adapter,
 	data->data_ready = 0;
 	data->timeout = 0;
 
+#ifndef CONFIG_MACH_STAR
 	init_waitqueue_head(&data->slaveirq_wait);
+#endif
 
 	res = request_irq(data->irq, slaveirq_handler, IRQF_TRIGGER_RISING,
 			  data->dev.name, data);
@@ -253,11 +266,15 @@ out_request_irq:
 	kfree(pdata->irq_data);
 	pdata->irq_data = NULL;
 
+#ifdef CONFIG_MACH_STAR
+	init_waitqueue_head(&data->slaveirq_wait);
+#endif
 	return res;
 }
 
 void slaveirq_exit(struct ext_slave_platform_data *pdata)
 {
+    printk("ENTER : %s\n", __FUNCTION__);
 	struct slaveirq_dev_data *data = pdata->irq_data;
 
 	if (!pdata->irq_data || data->irq <= 0)
