@@ -23,6 +23,30 @@ endchoice
 		  	  
 endmenu
 
+menu "LGE Star Ramhack options"
+
+choice
+	depends on MACH_STAR
+	prompt "STAR Ramhack Selection"
+
+config STAR_NO_RAMHACK
+	bool "No ramhack"
+	help
+	  Will provide no additional ram to userspace
+
+config STAR_16M_RAMHACK
+	bool "16 MB Ramhack"
+	help
+	  Will provide 16 MB of additional ram to userspace
+
+config STAR_32M_RAMHACK
+	bool "32 MB Ramhack"
+	help
+	  Will provide 32 MB of additional ram to userspace
+endchoice
+
+endmenu
+
 menu "LGE LCD / Backlight Selection"    	  	  
 
 config LCD_HITACHI

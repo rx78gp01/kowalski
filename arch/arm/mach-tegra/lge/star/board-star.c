@@ -60,7 +60,14 @@
 #include <linux/lbee9qmb-rfkill.h>
 
 #define SZ_3M (SZ_1M + SZ_2M)
+
+#if defined CONFIG_STAR_NO_RAMHACK
+#define SZ_152M (SZ_128M + SZ_16M + SZ_8M)
+#elif defined CONFIG_STAR_16M_RAMHACK
 #define SZ_136M (SZ_128M + SZ_8M)
+#elif defined CONFIG_STAR_32M_RAMHACK
+#define SZ_120M (SZ_128M - SZ_8M)
+#endif
 
 #if defined (CONFIG_STAR_REBOOT_MONITOR)
 extern void star_setup_reboot(void);
@@ -331,7 +338,13 @@ void __init tegra_star_reserve(void)
 	if (memblock_reserve(0x0, 4096) < 0)
 		pr_warn("Cannot reserve first 4K of memory for safety\n");
 
-	tegra_reserve(SZ_136M, SZ_3M, SZ_1M);
+#if defined CONFIG_STAR_NO_RAMHACK
+    tegra_reserve(SZ_152M, SZ_3M, SZ_1M);
+#elif defined CONFIG_STAR_16M_RAMHACK
+    tegra_reserve(SZ_136M, SZ_3M, SZ_1M);
+#elif defined CONFIG_STAR_32M_RAMHACK
+    tegra_reserve(SZ_120M, SZ_3M, SZ_1M);
+#endif
 	tegra_ram_console_debug_reserve(SZ_1M);
 }
 
