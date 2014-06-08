@@ -64,6 +64,9 @@ static int suspend_index;
 #define CPU_BOOT_CLOCK 1000000
 #endif
 
+#define CPU_RESUME_MIN_CLOCK  216000
+#define CPU_SUSPEND_MIN_CLOCK 120000
+
 static bool force_policy_max;
 
 static int force_policy_max_set(const char *arg, const struct kernel_param *kp)
@@ -97,6 +100,8 @@ static unsigned int cpu_user_cap = CPU_BOOT_CLOCK;
 #else
 static unsigned int cpu_user_cap;
 #endif
+
+static unsigned int cpu_user_cap_min_resume = CPU_RESUME_MIN_CLOCK;
 
 static inline void _cpu_user_cap_set_locked(void)
 {
@@ -154,6 +159,13 @@ static unsigned int user_cap_speed(unsigned int requested_speed)
 	if ((cpu_user_cap) && (requested_speed > cpu_user_cap))
 		return cpu_user_cap;
 	return requested_speed;
+}
+
+static unsigned int user_cap_resume_min_freq(unsigned int requested_speed)
+{
+    if((cpu_user_cap_min_resume) && (requested_speed < cpu_user_cap_min_resume))
+        return cpu_user_cap_min_resume;
+    return requested_speed;
 }
 
 #ifdef CONFIG_TEGRA_THERMAL_THROTTLE
@@ -599,6 +611,7 @@ int tegra_cpu_set_speed_cap(unsigned int *speed_cap)
 	new_speed = tegra_throttle_governor_speed(new_speed);
 	new_speed = edp_governor_speed(new_speed);
 	new_speed = user_cap_speed(new_speed);
+	new_speed = user_cap_resume_min_freq(new_speed);
 	if (speed_cap)
 		*speed_cap = new_speed;
 
@@ -650,17 +663,26 @@ _out:
 
 #ifdef CONFIG_KOWALSKI_CPU_SUSPEND_FREQ_LIMIT
 extern unsigned int kowalski_cpu_suspend_max_freq;
+extern unsigned int kowalski_cpu_resume_min_freq = 120000;
 
 static void cpu_tegra_suspend(struct early_suspend *handler) {
 	if (kowalski_cpu_suspend_max_freq) {
 		cpu_user_cap = kowalski_cpu_suspend_max_freq;
 		pr_info("Kowalski cpufreq suspend: setting max frequency to %d kHz\n", kowalski_cpu_suspend_max_freq);
 	}
+
+    cpu_user_cap_min_resume = CPU_SUSPEND_MIN_CLOCK;
+    pr_info("Kowalski cpufreq suspend: restoring min frequency to %d kHz\n", cpu_user_cap_min_resume);
 }
 
 static void cpu_tegra_resume(struct early_suspend *handler) {
 	cpu_user_cap = policy_max_speed[0];
 	pr_info("Kowalski cpufreq resume: restoring max frequency to %d kHz\n", cpu_user_cap);
+
+	if(kowalski_cpu_resume_min_freq) {
+	    cpu_user_cap_min_resume = kowalski_cpu_resume_min_freq;
+	    pr_info("Kowalski cpufreq suspend: setting min frequency to %d kHz\n", kowalski_cpu_resume_min_freq);
+	}
 }
 
 static struct early_suspend cpu_tegra_suspend_handler = {
