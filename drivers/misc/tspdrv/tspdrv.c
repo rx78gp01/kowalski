@@ -61,6 +61,9 @@ static int g_bStopRequested = false;
 static actuator_samples_buffer g_SamplesBuffer[NUM_ACTUATORS] = {{0}}; 
 static char g_cWriteBuffer[SPI_BUFFER_SIZE];
 
+static int vibration_force = 127;
+module_param(vibration_force, int, 0655);
+
 /* For QA purposes */
 #ifdef QA_TEST
 #define FORCE_LOG_BUFFER_SIZE   128
@@ -414,7 +417,11 @@ static int ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsig
 #ifdef QA_TEST
 	int i;
 #endif
-	VibeInt8 nForce[1] = {128};
+    int8_t force = (int8_t)vibration_force;
+    if(force > 127) force = 127;
+    else if(force < 0) force = 0;
+
+	VibeInt8 nForce[1] = {force};
 
 	DbgOut((KERN_INFO "[tspdrv] : ioctl cmd = %d   %x\n", cmd, cmd ));
 	switch (cmd)
