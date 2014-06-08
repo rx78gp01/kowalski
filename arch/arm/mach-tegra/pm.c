@@ -1112,8 +1112,12 @@ void __init tegra_init_suspend(struct tegra_suspend_platform_data *plat)
 	u32 reg;
 	u32 mode;
 
-	if (plat->cpu_wake_freq == 0)
-		plat->cpu_wake_freq = CPU_WAKE_FREQ_HIGH;
+    if (plat->cpu_wake_freq == 0)
+#ifdef CONFIG_MACH_STAR
+        plat->cpu_wake_freq = CPU_WAKE_FREQ_LOW;
+#else
+        plat->cpu_wake_freq = CPU_WAKE_FREQ_HIGH;
+#endif
 
 	tegra_cpu_rail = tegra_dvfs_get_rail_by_name("vdd_cpu");
 	tegra_core_rail = tegra_dvfs_get_rail_by_name("vdd_core");
