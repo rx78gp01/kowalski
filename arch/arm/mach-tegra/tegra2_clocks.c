@@ -2766,13 +2766,13 @@ static struct cpufreq_frequency_table freq_table_1p0GHz[] = {
     { 1,  168000 },
     { 2,  216000 },
     { 3,  312000 },
-    { 5,  456000 },
-    { 6,  608000 },
-    { 7,  760000 },
-    { 8,  816000 },
-    { 9,  912000 },
-    {10, 1000000 },
-    {11, CPUFREQ_TABLE_END },
+    { 4,  456000 },
+    { 5,  608000 },
+    { 6,  760000 },
+    { 7,  816000 },
+    { 8,  912000 },
+    { 9, 1000000 },
+    {10, CPUFREQ_TABLE_END },
 };
 
 static struct cpufreq_frequency_table freq_table_1p2GHz[] = {
