@@ -51,7 +51,6 @@ static const int core_millivolts[MAX_DVFS_FREQS] =
                 1300,
                 1350,
                 1400,
-                1450
         };
 #else
         {
@@ -68,9 +67,9 @@ static const int core_millivolts[MAX_DVFS_FREQS] =
 static const int cpu_millivolts[MAX_DVFS_FREQS] =
 #ifdef CONFIG_KOWALSKI_OC
         {
-                630,    /* 120 MHz */
-                690,    /* 168 MHz */
-                750,    /* 216 MHz */
+                770,    /* 120 MHz */
+                770,    /* 168 MHz */
+                770,    /* 216 MHz */
                 780,    /* 312 MHz */
                 830,    /* 456 MHz */
                 870,    /* 608 MHz */
@@ -126,8 +125,8 @@ static const int core_speedo_nominal_millivolts[] =
 static struct dvfs_rail tegra2_dvfs_rail_vdd_cpu = {
         .reg_id = "vdd_cpu",
 #ifdef CONFIG_KOWALSKI_OC
-        .min_millivolts = 600,
-        .max_millivolts = 1350,
+        .min_millivolts = 770,
+        .max_millivolts = 1400,
         .nominal_millivolts = 1300,
 #else
         .min_millivolts = 750,
@@ -246,7 +245,7 @@ static struct dvfs_rail *tegra2_dvfs_rails[] = {
 
 #if defined(CONFIG_KOWALSKI_OC)
 static struct dvfs dvfs_init[] = {
-                                /* 630, 690, 750, 775, 825, 875, 900, 925, 975, 1000, 1075, 1150, 1200, 1250, 1300, 1350 */
+                                /* 770, 770, 770, 775, 825, 875, 900, 925, 975, 1000, 1075, 1150, 1200, 1250, 1300, 1350 */
         CPU_DVFS("cpu", 1, 0, MHZ, 120, 168, 216, 312, 456, 608, 760, 816, 912, 1000, 1100, 1200, 1300, 1404, 1500, 1500),
         CPU_DVFS("cpu", 1, 1, MHZ, 120, 168, 216, 312, 456, 608, 760, 816, 912, 1000, 1100, 1200, 1300, 1404, 1500, 1500),
 

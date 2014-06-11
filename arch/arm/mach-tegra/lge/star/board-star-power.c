@@ -333,11 +333,7 @@ static struct platform_device max8952_##_id##_device = {			\
 	},									\
 }
 
-#if defined(CONFIG_KOWALSKI_UV) && defined(CONFIG_KOWALSKI_OC)
-    MAX8952_REGULATOR_INIT(MODE1, 600000, 1300000);
-#else
-    MAX8952_REGULATOR_INIT(MODE1, 770000, 1400000);
-#endif
+MAX8952_REGULATOR_INIT(MODE1, 770000, 1400000);
 
 static struct platform_device *max8952_power_devices[] = {
 	&max8952_MODE1_device,

@@ -17,13 +17,8 @@
 #include <linux/regulator/max8952r.h>
 #include <linux/platform_device.h>
 
-#if defined(CONFIG_MACH_STAR) && defined(CONFIG_KOWALSKI_UV) && defined(CONFIG_KOWALSKI_OC)
-#define MIN_UV_VALUE 70
-#define MAX_UV_VALUE 130
-#else
 #define MIN_UV_VALUE 77
 #define MAX_UV_VALUE 140
-#endif
 
 #if defined (CONFIG_MACH_STAR)
 #define VOLTAGE_TO_VALUE(v) (((v) - (MIN_UV_VALUE*10000)) / 10000)
