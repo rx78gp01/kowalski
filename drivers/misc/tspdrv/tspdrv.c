@@ -62,7 +62,7 @@ static actuator_samples_buffer g_SamplesBuffer[NUM_ACTUATORS] = {{0}};
 static char g_cWriteBuffer[SPI_BUFFER_SIZE];
 
 static int vibration_force = 127;
-module_param(vibration_force, int, 0655);
+module_param(vibration_force, int, 0644);
 
 /* For QA purposes */
 #ifdef QA_TEST
