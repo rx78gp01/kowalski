@@ -95,12 +95,6 @@ void tegra_dc_release_dc_out(struct tegra_dc *dc)
 		dc->out_ops->release(dc);
 }
 
-#define DUMP_REG(a) do {			\
-	snprintf(buff, sizeof(buff), "%-32s\t%03x\t%08lx\n", \
-		 #a, a, tegra_dc_readl(dc, a));		      \
-	print(data, buff);				      \
-	} while (0)
-
 #define print_underflow_info(dc) do {                 \
 	trace_printk("%s:Underflow stats: underflows : %llu, "      \
 			"undeflows_a : %llu, "                          \
@@ -110,6 +104,13 @@ void tegra_dc_release_dc_out(struct tegra_dc *dc)
 			dc->stats.underflows,                           \
 			dc->stats.underflows_a, dc->stats.underflows_b, \
 			dc->stats.underflows_c);                        \
+	} while (0)
+
+#ifdef DEBUG
+#define DUMP_REG(a) do {			\
+	snprintf(buff, sizeof(buff), "%-32s\t%03x\t%08lx\n", \
+		 #a, a, tegra_dc_readl(dc, a));		      \
+	print(data, buff);				      \
 	} while (0)
 
 static void _dump_regs(struct tegra_dc *dc, void *data,
@@ -277,7 +278,6 @@ static void _dump_regs(struct tegra_dc *dc, void *data,
 
 #undef DUMP_REG
 
-#ifdef DEBUG
 static void dump_regs_print(void *data, const char *str)
 {
 	struct tegra_dc *dc = data;
