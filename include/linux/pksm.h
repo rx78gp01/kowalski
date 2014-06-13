@@ -27,7 +27,7 @@ extern int pksm_add_new_anon_page(struct page *page, struct rmap_item *rmap_item
 extern int pksm_del_anon_page(struct page *page);
 extern void pksm_unmap_sharing_page(struct page *page, struct mm_struct *mm, unsigned long address);
 extern void pksm_free_stable_anon(struct anon_vma *anon_vma);
-
+extern bool pksm_should_alloc_rmap_item(void);
 #else
 
 #endif /* !CONFIG_PKSM */

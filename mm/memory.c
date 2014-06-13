@@ -3149,7 +3149,8 @@ static int do_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
 		return VM_FAULT_SIGBUS;
 
 #ifdef CONFIG_PKSM
-    rmap = pksm_alloc_rmap_item();
+    if(pksm_should_alloc_rmap_item())
+        rmap = pksm_alloc_rmap_item();
 #endif
 
 	/* Use the zero-page for reads */
@@ -3192,7 +3193,7 @@ setpte:
 unlock:
 	pte_unmap_unlock(page_table, ptl);
 #ifdef CONFIG_PKSM
-	if (rmap)
+	if (rmap && pksm_should_alloc_rmap_item())
 		pksm_add_new_anon_page(page, rmap, vma->anon_vma);
 #endif
 	return 0;

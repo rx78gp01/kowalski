@@ -297,7 +297,7 @@ static bool use_deferred_timer;
 #define KSM_RUN_STOP	0
 #define KSM_RUN_MERGE	1
 #define KSM_RUN_UNMERGE	2
-static unsigned int ksm_run = KSM_RUN_MERGE;
+static unsigned int ksm_run = KSM_RUN_STOP;
 
 /* The hash strength needed to hash a full page */
 #define RSAD_STRENGTH_FULL		(PAGE_SIZE / sizeof(u32))
@@ -393,6 +393,11 @@ static inline void free_stable_anon(struct stable_node_anon *stable_anon)
 		kmem_cache_free(stable_anon_cache, stable_anon);
 		ksm_stable_nodes--;
 	}
+}
+
+bool pksm_should_alloc_rmap_item(void)
+{
+    return (ksm_run != KSM_RUN_STOP);
 }
 
 struct rmap_item *pksm_alloc_rmap_item(void)
