@@ -98,6 +98,9 @@ static unsigned int cpu_user_cap = CPU_BOOT_CLOCK;
 static unsigned int cpu_user_cap;
 #endif
 
+static unsigned int cpu_screen_off_cap = 120000;
+static bool is_screen_off = false;
+
 static inline void _cpu_user_cap_set_locked(void)
 {
 #ifndef CONFIG_TEGRA_CPU_CAP_EXACT_FREQ
@@ -153,6 +156,13 @@ static unsigned int user_cap_speed(unsigned int requested_speed)
 {
 	if ((cpu_user_cap) && (requested_speed > cpu_user_cap))
 		return cpu_user_cap;
+	return requested_speed;
+}
+
+static unsigned int cpu_screen_off_speed(unsigned int requested_speed)
+{
+    if (!is_screen_off && requested_speed < cpu_screen_off_cap)
+		return cpu_screen_off_cap;
 	return requested_speed;
 }
 
@@ -599,6 +609,8 @@ int tegra_cpu_set_speed_cap(unsigned int *speed_cap)
 	new_speed = tegra_throttle_governor_speed(new_speed);
 	new_speed = edp_governor_speed(new_speed);
 	new_speed = user_cap_speed(new_speed);
+	new_speed = cpu_screen_off_speed(new_speed);
+
 	if (speed_cap)
 		*speed_cap = new_speed;
 
@@ -660,10 +672,12 @@ static void cpu_tegra_suspend(struct early_suspend *handler) {
 		cpu_user_cap = kowalski_cpu_suspend_max_freq;
 		pr_info("Kowalski cpufreq suspend: setting max frequency to %d kHz\n", kowalski_cpu_suspend_max_freq);
 	}
+	is_screen_off = true;
 }
 
 static void cpu_tegra_resume(struct early_suspend *handler) {
 	cpu_user_cap = policy_max_speed[0];
+	is_screen_off = false;
 	pr_info("Kowalski cpufreq resume: restoring max frequency to %d kHz\n", cpu_user_cap);
 }
 
