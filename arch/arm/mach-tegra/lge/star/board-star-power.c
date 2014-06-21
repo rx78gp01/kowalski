@@ -120,7 +120,7 @@ static struct regulator_consumer_supply max8907c_LDO9_supply[] = {
 };
 
 static struct regulator_consumer_supply max8907c_LDO10_supply[] = {
-	REGULATOR_SUPPLY("vcc_touch_3v1", NULL),
+	REGULATOR_SUPPLY("vcc_touch_3v1", NULL), //Power supply for driver IC
 };
 
 static struct regulator_consumer_supply max8907c_LDO11_supply[] = {
@@ -161,7 +161,7 @@ static struct regulator_consumer_supply max8907c_LDO18_supply[] = {
 };
 
 static struct regulator_consumer_supply max8907c_LDO19_supply[] = {
-	REGULATOR_SUPPLY("vcc_touch_1v8", NULL),
+	REGULATOR_SUPPLY("vcc_touch_1v8", NULL), // Power supply for Interface I/O
 };
 
 static struct regulator_consumer_supply max8907c_LDO20_supply[] = {
