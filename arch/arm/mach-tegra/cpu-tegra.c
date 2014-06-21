@@ -101,6 +101,57 @@ static unsigned int cpu_user_cap;
 static unsigned int cpu_screen_off_cap = 120000;
 static bool is_screen_off = false;
 
+#ifdef CONFIG_TEGRA_CPU_BOOST_INTERFACE
+#include <asm-generic/cputime.h>
+static unsigned int cpu_requested_freq_boost = 0;
+static cputime64_t cpu_requested_freq_end;
+
+void cpufreq_tegra_freq_boost(unsigned int freq, unsigned int ms_duration)
+{
+    cputime64_t cur;
+
+    //Find the nearest freq in the frequency table
+    if (freq != 0) {
+		int i;
+		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+			if (freq_table[i].frequency > cpu_user_cap)
+				break;
+		}
+		i = (i == 0) ? 0 : i - 1;
+		freq = freq_table[i].frequency;
+	}
+
+	if(freq < cpu_requested_freq_boost)
+	    return; // This freq is lower and we should always take the highest!
+
+	cur = ktime_to_ms(ktime_get());
+
+	cpu_requested_freq_boost = freq;
+	cpu_requested_freq_end = cur + ms_duration;
+
+	//Force a cpu speed update
+	if(is_suspended)
+	    tegra_suspended_target(freq);
+    else
+        tegra_cpu_set_speed_cap(NULL);
+}
+
+static unsigned int cpu_freq_check_for_boost(unsigned int requested_freq) {
+    cputime64_t cur = ktime_to_ms(ktime_get());
+
+    //TODO: Check for policy max!
+    if(cpu_requested_freq_end < cur) {
+        //Reset the frequency if it is no longer valid
+        cpu_requested_freq_boost = 0;
+
+        return requested_freq;
+    } else if (requested_freq < cpu_requested_freq_boost)
+        return cpu_requested_freq_boost;
+
+    return requested_freq;
+}
+#endif
+
 static inline void _cpu_user_cap_set_locked(void)
 {
 #ifndef CONFIG_TEGRA_CPU_CAP_EXACT_FREQ
@@ -611,6 +662,10 @@ int tegra_cpu_set_speed_cap(unsigned int *speed_cap)
 	new_speed = user_cap_speed(new_speed);
 	new_speed = cpu_screen_off_speed(new_speed);
 
+#ifdef CONFIG_TEGRA_CPU_BOOST_INTERFACE
+	new_speed = cpu_freq_check_for_boost(new_speed);
+#endif
+
 	if (speed_cap)
 		*speed_cap = new_speed;
 
@@ -630,6 +685,10 @@ int tegra_suspended_target(unsigned int target_freq)
 	/* apply only "hard" caps */
 	new_speed = tegra_throttle_governor_speed(new_speed);
 	new_speed = edp_governor_speed(new_speed);
+
+#ifdef CONFIG_TEGRA_CPU_BOOST_INTERFACE
+	new_speed = cpu_freq_check_for_boost(new_speed);
+#endif
 
 	return tegra_update_cpu_speed(new_speed);
 }

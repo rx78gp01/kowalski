@@ -411,5 +411,8 @@ void cpufreq_frequency_table_get_attr(struct cpufreq_frequency_table *table,
 
 void cpufreq_frequency_table_put_attr(unsigned int cpu);
 
+#ifdef CONFIG_TEGRA_CPU_BOOST_INTERFACE
+void cpufreq_tegra_freq_boost(unsigned int freq, unsigned int ms_duration);
+#endif
 
 #endif /* _LINUX_CPUFREQ_H */
