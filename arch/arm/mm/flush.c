@@ -182,7 +182,7 @@ void __flush_dcache_page(struct address_space *mapping, struct page *page)
 		} else if (cache_is_vipt()) {
 			/* unmapped pages might still be cached */
 			addr = kmap_atomic(page);
-			if(addr == NULL) {
+			if(unlikely(addr == NULL)) {
 			    printk("[ERROR] mm: flush: __flush_dcache_page addr = NULL!");
 			    return;
 			}
