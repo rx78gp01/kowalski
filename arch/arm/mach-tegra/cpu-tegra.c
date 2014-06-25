@@ -98,7 +98,7 @@ static unsigned int cpu_user_cap = CPU_BOOT_CLOCK;
 static unsigned int cpu_user_cap;
 #endif
 
-static unsigned int cpu_screen_off_cap = 120000;
+static unsigned int cpu_screen_on_min_cap = 120000;
 static bool is_screen_off = false;
 
 #ifdef CONFIG_TEGRA_CPU_BOOST_INTERFACE
@@ -150,7 +150,46 @@ static unsigned int cpu_freq_check_for_boost(unsigned int requested_freq) {
 
     return requested_freq;
 }
-#endif
+#endif /* CONFIG_TEGRA_CPU_BOOST_INTERFACE */
+
+static inline void _cpu_screen_on_min_cap_set_locked(void)
+{
+	if (cpu_screen_on_min_cap != 0) {
+		int i;
+		for (i = 0; freq_table[i].frequency != CPUFREQ_TABLE_END; i++) {
+			if (freq_table[i].frequency > cpu_screen_on_min_cap)
+				break;
+		}
+		i = (i == 0) ? 0 : i - 1;
+		cpu_screen_on_min_cap = freq_table[i].frequency;
+	}
+	tegra_cpu_set_speed_cap(NULL);
+}
+
+static int cpu_screen_on_min_cap_set(const char *arg, const struct kernel_param *kp)
+{
+	int ret;
+
+	mutex_lock(&tegra_cpu_lock);
+
+	ret = param_set_uint(arg, kp);
+	if (ret == 0)
+		_cpu_screen_on_min_cap_set_locked();
+
+	mutex_unlock(&tegra_cpu_lock);
+	return ret;
+}
+
+static int cpu_screen_on_min_cap_get(char *buffer, const struct kernel_param *kp)
+{
+	return param_get_uint(buffer, kp);
+}
+
+static struct kernel_param_ops cap_screen_on_min_ops = {
+	.set = cpu_screen_on_min_cap_set,
+	.get = cpu_screen_on_min_cap_get,
+};
+module_param_cb(cpu_screen_on_min_cap, &cap_screen_on_min_ops, &cpu_screen_on_min_cap, 0644);
 
 static inline void _cpu_user_cap_set_locked(void)
 {
@@ -212,8 +251,8 @@ static unsigned int user_cap_speed(unsigned int requested_speed)
 
 static unsigned int cpu_screen_off_speed(unsigned int requested_speed)
 {
-    if (!is_screen_off && requested_speed < cpu_screen_off_cap)
-		return cpu_screen_off_cap;
+    if (!is_screen_off && requested_speed < cpu_screen_on_min_cap)
+		return cpu_screen_on_min_cap;
 	return requested_speed;
 }
 
