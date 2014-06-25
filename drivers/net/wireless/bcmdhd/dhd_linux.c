@@ -632,7 +632,7 @@ dhd_dynamic_dtim_skip_release(dhd_pub_t *dhdp)
 #endif
 
 bool wifi_pm = true;
-module_param(wifi_pm, bool, 0755);
+module_param(wifi_pm, bool, 0644);
 
 static int dhd_set_suspend(int value, dhd_pub_t *dhd)
 {
