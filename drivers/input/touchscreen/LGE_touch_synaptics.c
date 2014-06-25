@@ -647,6 +647,8 @@ bool powerOff(LGE_Device_Handle h_dev)
 	Synaptics_TouchDevice* hTouch = (Synaptics_TouchDevice*)h_dev;
 
 	Synaptics_PowerOnOff(hTouch, false);
+
+	return true;
 }
 
 
@@ -664,7 +666,7 @@ bool Synaptics_GetData (LGE_Device_Handle h_dev, LGE_Touch_FingerData* data)
 	u8  index=0;
 
 	if(is_star_touch_enable == false)
-		return;
+		return true;
 
 	i2c_smbus_read_i2c_block_data(hTouch->client, SYNAPTICS_INT_STATUS_REG, sizeof(u8)*4, (u8*)(&ts_reg_data.interrupt_status_reg));
 	DEBUG_MSG(M, "[TOUCH] i[%d], 0[%d], 1[%d], 2[%d]", (int)ts_reg_data.interrupt_status_reg, (int)ts_reg_data.finger_state_reg[0], (int)ts_reg_data.finger_state_reg[1], (int)ts_reg_data.finger_state_reg[2]);
