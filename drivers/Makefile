@@ -131,7 +131,7 @@ obj-$(CONFIG_IOMMU_SUPPORT)	+= iommu/
 obj-$(CONFIG_VIRT_DRIVERS)	+= virt/
 
 
-ifeq (1, $(shell if [ -d drivers/exfat ] ; then echo 1 ; fi))
-obj-y   += exfat/
-endif
+# ifeq (1, $(shell if [ -d drivers/exfat ] ; then echo 1 ; fi))
+# obj-y   += exfat/
+# endif
 
