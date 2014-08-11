@@ -91,6 +91,21 @@ config TOUCHSCREEN_TEGRA_STAR
     help
       This enables support for Synaptics STAR over I2C based touchscreens.
 
+choice
+	depends on MACH_STAR && TOUCHSCREEN_TEGRA_STAR
+	prompt "STAR touchscreen driver selection"
+
+config TOUCHSCREEN_TEGRA_STAR_LEGACY
+	bool "Legacy driver"
+	help
+	  This is the original LG Touchscreen driver
+
+config TOUCHSCREEN_TEGRA_KOWALSKI
+	bool "Kowalski driver"
+	help
+	  This is the new Kowalski specific driver
+
+endchoice
 
 config ONETOUCHSCREEN_TEGRA_STAR
 	tristate "Onetouchscreen for KR STAR"
