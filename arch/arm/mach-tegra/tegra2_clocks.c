@@ -2481,81 +2481,82 @@ static struct clk tegra_clk_emc = {
 	}
 
 struct clk tegra_list_periph_clks[] = {
-	PERIPH_CLK("apbdma",	"tegra-dma",		NULL,	34,	0,	0x31E,	108000000, mux_pclk,			0),
-	PERIPH_CLK("rtc",	"rtc-tegra",		NULL,	4,	0,	0x31E,	32768,     mux_clk_32k,			PERIPH_NO_RESET | PERIPH_ON_APB),
-	PERIPH_CLK("kbc",	"tegra-kbc",		NULL,	36, 	0,	0x31E,	32768,	   mux_clk_32k, PERIPH_NO_RESET | PERIPH_ON_APB),
-	PERIPH_CLK("timer",	"timer",		NULL,	5,	0,	0x31E,	26000000,  mux_clk_m,			0),
-	PERIPH_CLK("i2s1",	"tegra20-i2s.0",	NULL,	11,	0x100,	0x31E,	26000000,  mux_pllaout0_audio2x_pllp_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("i2s2",	"tegra20-i2s.1",	NULL,	18,	0x104,	0x31E,	26000000,  mux_pllaout0_audio2x_pllp_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("fuse",	"fuse-tegra",		"fuse",	39,	0,	0x31E,	26000000,  mux_clk_m,			PERIPH_ON_APB),
-	PERIPH_CLK("fuse_burn",	"fuse-tegra",		"fuse_burn",	39,	0,	0x31E,	26000000,  mux_clk_m,		PERIPH_ON_APB),
-	PERIPH_CLK("kfuse",	"kfuse-tegra",		NULL,	40,	0,	0x31E,  26000000,  mux_clk_m,			0),
-	PERIPH_CLK("spdif_out",	"tegra20-spdif",	"spdif_out",	10,	0x108,	0x31E,	100000000, mux_pllaout0_audio2x_pllp_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("spdif_in",	"tegra20-spdif",	"spdif_in",	10,	0x10c,	0x31E,	100000000, mux_pllp_pllc_pllm,		MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("pwm",	"pwm",			NULL,	17,	0x110,	0x71C,	432000000, mux_pllp_pllc_audio_clkm_clk32,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("spi",	"spi",			NULL,	43,	0x114,	0x31E,	40000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("xio",	"xio",			NULL,	45,	0x120,	0x31E,	150000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71),
-	PERIPH_CLK("twc",	"twc",			NULL,	16,	0x12c,	0x31E,	150000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("sbc1",	"spi_tegra.0",		"spi",	41,	0x134,	0x31E,	160000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("sbc2",	"spi_tegra.1",		"spi",	44,	0x118,	0x31E,	160000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("sbc3",	"spi_tegra.2",		"spi",	46,	0x11c,	0x31E,	160000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("sbc4",	"spi_tegra.3",		"spi",	68,	0x1b4,	0x31E,	160000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("ide",	"ide",			NULL,	25,	0x144,	0x31E,	100000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* requires min voltage */
-	PERIPH_CLK("ndflash",	"tegra_nand",		NULL,	13,	0x160,	0x31E,	164000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* scales with voltage */
-	PERIPH_CLK("vfir",	"vfir",			NULL,	7,	0x168,	0x31E,	72000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("sdmmc1",	"sdhci-tegra.0",	NULL,	14,	0x150,	0x31E,	52000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* scales with voltage */
-	PERIPH_CLK("sdmmc2",	"sdhci-tegra.1",	NULL,	9,	0x154,	0x31E,	52000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* scales with voltage */
-	PERIPH_CLK("sdmmc3",	"sdhci-tegra.2",	NULL,	69,	0x1bc,	0x31E,	52000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* scales with voltage */
-	PERIPH_CLK("sdmmc4",	"sdhci-tegra.3",	NULL,	15,	0x164,	0x31E,	52000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* scales with voltage */
-	PERIPH_CLK("vcp",	"tegra-avp",		"vcp",	29,	0,	0x31E,	250000000, mux_clk_m, 			0),
-	PERIPH_CLK("bsea",	"tegra-avp",		"bsea",	62,	0,	0x31E,	250000000, mux_clk_m, 			0),
-	PERIPH_CLK("bsev",	"tegra-aes",		"bsev",	63,	0,	0x31E,  250000000, mux_clk_m, 			0),
-	PERIPH_CLK("vde",	"tegra-avp",		"vde",	61,	0x1c8,	0x31E,	250000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* scales with voltage and process_id */
-	PERIPH_CLK("csite",	"csite",		NULL,	73,	0x1d4,	0x31E,	144000000, mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* max rate ??? */
-	/* FIXME: what is la? */
-	PERIPH_CLK("la",	"la",			NULL,	76,	0x1f8,	0x31E,	26000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71),
-	PERIPH_CLK("owr",	"tegra_w1",		NULL,	71,	0x1cc,	0x31E,	26000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB),
-	PERIPH_CLK("nor",	"tegra-nor",		NULL,	42,	0x1d0,	0x31E,	92000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71), /* requires min voltage */
-	PERIPH_CLK("mipi",	"mipi",			NULL,	50,	0x174,	0x31E,	60000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U71 | PERIPH_ON_APB), /* scales with voltage */
-	PERIPH_CLK("i2c1",	"tegra-i2c.0",		"div-clk",	12,	0x124,	0x31E,	26000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U16 | PERIPH_ON_APB),
-	PERIPH_CLK("i2c2",	"tegra-i2c.1",		"div-clk",	54,	0x198,	0x31E,	26000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U16 | PERIPH_ON_APB),
-	PERIPH_CLK("i2c3",	"tegra-i2c.2",		"div-clk",	67,	0x1b8,	0x31E,	26000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U16 | PERIPH_ON_APB),
-	PERIPH_CLK("dvc",	"tegra-i2c.3",		"div-clk",	47,	0x128,	0x31E,	26000000,  mux_pllp_pllc_pllm_clkm,	MUX | DIV_U16 | PERIPH_ON_APB),
-	PERIPH_CLK("i2c1-fast", "tegra-i2c.0",          "fast-clk",	0,      0,      0x31E,	108000000, mux_pllp_out3,	PERIPH_NO_ENB),
-	PERIPH_CLK("i2c2-fast", "tegra-i2c.1",          "fast-clk",	0,      0,      0x31E,	108000000, mux_pllp_out3,	PERIPH_NO_ENB),
-	PERIPH_CLK("i2c3-fast", "tegra-i2c.2",          "fast-clk",	0,      0,      0x31E,	108000000, mux_pllp_out3,	PERIPH_NO_ENB),
-	PERIPH_CLK("dvc-fast",  "tegra-i2c.3",          "fast-clk",	0,      0,      0x31E,	108000000, mux_pllp_out3,	PERIPH_NO_ENB),
-	PERIPH_CLK("uarta",	"tegra_uart.0",		NULL,	6,	0x178,	0x31E,	600000000, mux_pllp_pllc_pllm_clkm,	MUX | PERIPH_ON_APB),
-	PERIPH_CLK("uartb",	"tegra_uart.1",		NULL,	7,	0x17c,	0x31E,	600000000, mux_pllp_pllc_pllm_clkm,	MUX | PERIPH_ON_APB),
-	PERIPH_CLK("uartc",	"tegra_uart.2",		NULL,	55,	0x1a0,	0x31E,	600000000, mux_pllp_pllc_pllm_clkm,	MUX | PERIPH_ON_APB),
-	PERIPH_CLK("uartd",	"tegra_uart.3",		NULL,	65,	0x1c0,	0x31E,	600000000, mux_pllp_pllc_pllm_clkm,	MUX | PERIPH_ON_APB),
-	PERIPH_CLK("uarte",	"tegra_uart.4",		NULL,	66,	0x1c4,	0x31E,	600000000, mux_pllp_pllc_pllm_clkm,	MUX | PERIPH_ON_APB),
-	PERIPH_CLK("3d",	"3d",			NULL,	24,	0x158,	0x31E,	300000000, mux_pllm_pllc_pllp_plla,	MUX | DIV_U71 | PERIPH_MANUAL_RESET), /* scales with voltage and process_id */
-	PERIPH_CLK("2d",	"2d",			NULL,	21,	0x15c,	0x31E,	300000000, mux_pllm_pllc_pllp_plla,	MUX | DIV_U71), /* scales with voltage and process_id */
-	PERIPH_CLK("vi",	"tegra_camera",		"vi",	20,	0x148,	0x31E,	150000000, mux_pllm_pllc_pllp_plla,	MUX | DIV_U71), /* scales with voltage and process_id */
-	PERIPH_CLK("vi_sensor",	"tegra_camera",		"vi_sensor",	20,	0x1a8,	0x31E,	150000000, mux_pllm_pllc_pllp_plla,	MUX | DIV_U71 | PERIPH_NO_RESET), /* scales with voltage and process_id */
-	PERIPH_CLK("epp",	"epp",			NULL,	19,	0x16c,	0x31E,	300000000, mux_pllm_pllc_pllp_plla,	MUX | DIV_U71), /* scales with voltage and process_id */
-	PERIPH_CLK("mpe",	"mpe",			NULL,	60,	0x170,	0x31E,	300000000, mux_pllm_pllc_pllp_plla,	MUX | DIV_U71), /* scales with voltage and process_id */
-	PERIPH_CLK("host1x",	"host1x",		NULL,	28,	0x180,	0x31E,	166000000, mux_pllm_pllc_pllp_plla,	MUX | DIV_U71), /* scales with voltage and process_id */
-	PERIPH_CLK("cve",	"cve",			NULL,	49,	0x140,	0x31E,	250000000, mux_pllp_plld_pllc_clkm,	MUX | DIV_U71), /* requires min voltage */
-	PERIPH_CLK("tvo",	"tvo",			NULL,	49,	0x188,	0x31E,	250000000, mux_pllp_plld_pllc_clkm,	MUX | DIV_U71), /* requires min voltage */
-	PERIPH_CLK("hdmi",	"hdmi",			NULL,	51,	0x18c,	0x31E,	600000000, mux_pllp_plld_pllc_clkm,	MUX | DIV_U71), /* requires min voltage */
-	PERIPH_CLK("tvdac",	"tvdac",		NULL,	53,	0x194,	0x31E,	250000000, mux_pllp_plld_pllc_clkm,	MUX | DIV_U71), /* requires min voltage */
-	PERIPH_CLK("disp1",	"tegradc.0",		NULL,	27,	0x138,	0x31E,	600000000, mux_pllp_plld_pllc_clkm,	MUX), /* scales with voltage and process_id */
-	PERIPH_CLK("disp2",	"tegradc.1",		NULL,	26,	0x13c,	0x31E,	600000000, mux_pllp_plld_pllc_clkm,	MUX), /* scales with voltage and process_id */
-	PERIPH_CLK("usbd",	"tegra-udc.0",	NULL,	22,	0,	0x31E,	480000000, mux_clk_m,			0), /* requires min voltage */
-	PERIPH_CLK("usb2",	"tegra-ehci.1",		NULL,	58,	0,	0x31E,	480000000, mux_clk_m,			0), /* requires min voltage */
-	PERIPH_CLK("usb3",	"tegra-ehci.2",		NULL,	59,	0,	0x31E,	480000000, mux_clk_m,			0), /* requires min voltage */
-	PERIPH_CLK("dsia",	"tegradc.0",		"dsia",	48,	0,	0x31E,	500000000, mux_plld_out0,		0), /* scales with voltage */
-	PERIPH_CLK("dsi1-fixed", "tegradc.0",		"dsi-fixed",	0,	0,	0x31E,	108000000, mux_pllp_out3,	PERIPH_NO_ENB),
-	PERIPH_CLK("dsi2-fixed", "tegradc.1",		"dsi-fixed",	0,	0,	0x31E,	108000000, mux_pllp_out3,	PERIPH_NO_ENB),
-	PERIPH_CLK("csi",	"tegra_camera",		"csi",	52,	0,	0x31E,	72000000,  mux_pllp_out3,		0),
-	PERIPH_CLK("isp",	"tegra_camera",		"isp",	23,	0,	0x31E,	150000000, mux_clk_m,			0), /* same frequency as VI */
-	PERIPH_CLK("csus",	"tegra_camera",		"csus",	92,	0,	0x31E,	150000000, mux_clk_m,			PERIPH_NO_RESET),
-	PERIPH_CLK("pex",       NULL,			"pex",  70,     0,	0x31E,	26000000,  mux_clk_m,			PERIPH_MANUAL_RESET),
-	PERIPH_CLK("afi",       NULL,			"afi",  72,     0,	0x31E,	26000000,  mux_clk_m,			PERIPH_MANUAL_RESET),
-	PERIPH_CLK("pcie_xclk", NULL,		  "pcie_xclk",  74,     0,	0x31E,	26000000,  mux_clk_m,			PERIPH_MANUAL_RESET),
-	PERIPH_CLK("stat_mon",	"tegra-stat-mon",	NULL,	37,	0,	0x31E,	26000000,  mux_clk_m,			0),
+    //          NAME          DEV_ID            CON_ID     CLK_NUM  REG  REG_SHIFT     MAX      INPUTS                        FLAGS
+    PERIPH_CLK("apbdma",    "tegra-dma",        NULL,        34,     0,    0x31E,   108000000, mux_pclk,                       0),
+    PERIPH_CLK("rtc",       "rtc-tegra",        NULL,         4,     0,    0x31E,       32768, mux_clk_32k,                    PERIPH_NO_RESET | PERIPH_ON_APB),
+    PERIPH_CLK("kbc",       "tegra-kbc",        NULL,        36,     0,    0x31E,       32768, mux_clk_32k,                    PERIPH_NO_RESET | PERIPH_ON_APB),
+    PERIPH_CLK("timer",     "timer",            NULL,         5,     0,    0x31E,    26000000, mux_clk_m,                      0),
+    PERIPH_CLK("i2s1",      "tegra20-i2s.0",    NULL,        11, 0x100,    0x31E,    26000000, mux_pllaout0_audio2x_pllp_clkm, MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("i2s2",      "tegra20-i2s.1",    NULL,        18, 0x104,    0x31E,    26000000, mux_pllaout0_audio2x_pllp_clkm, MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("fuse",      "fuse-tegra",       "fuse",      39,     0,    0x31E,    26000000, mux_clk_m,                      PERIPH_ON_APB),
+    PERIPH_CLK("fuse_burn", "fuse-tegra",       "fuse_burn", 39,     0,    0x31E,    26000000, mux_clk_m,                      PERIPH_ON_APB),
+    PERIPH_CLK("kfuse",     "kfuse-tegra",      NULL,        40,     0,    0x31E,    26000000, mux_clk_m,                      0),
+    PERIPH_CLK("spdif_out", "tegra20-spdif",    "spdif_out", 10, 0x108,    0x31E,   100000000, mux_pllaout0_audio2x_pllp_clkm, MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("spdif_in",  "tegra20-spdif",    "spdif_in",  10, 0x10c,    0x31E,   100000000, mux_pllp_pllc_pllm,             MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("pwm",       "pwm",              NULL,        17, 0x110,    0x71C,   432000000, mux_pllp_pllc_audio_clkm_clk32, MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("spi",       "spi",              NULL,        43, 0x114,    0x31E,    40000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("xio",       "xio",              NULL,        45, 0x120,    0x31E,   150000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71),
+    PERIPH_CLK("twc",       "twc",              NULL,        16, 0x12c,    0x31E,   150000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("sbc1",      "spi_tegra.0",      "spi",       41, 0x134,    0x31E,   160000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("sbc2",      "spi_tegra.1",      "spi",       44, 0x118,    0x31E,   160000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("sbc3",      "spi_tegra.2",      "spi",       46, 0x11c,    0x31E,   160000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("sbc4",      "spi_tegra.3",      "spi",       68, 0x1b4,    0x31E,   160000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("ide",       "ide",              NULL,        25, 0x144,    0x31E,   100000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* requires min voltage */
+    PERIPH_CLK("ndflash",   "tegra_nand",       NULL,        13, 0x160,    0x31E,   164000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* scales with voltage */
+    PERIPH_CLK("vfir",      "vfir",             NULL,         7, 0x168,    0x31E,    72000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("sdmmc1",    "sdhci-tegra.0",    NULL,        14, 0x150,    0x31E,    52000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* scales with voltage */
+    PERIPH_CLK("sdmmc2",    "sdhci-tegra.1",    NULL,         9, 0x154,    0x31E,    52000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* scales with voltage */
+    PERIPH_CLK("sdmmc3",    "sdhci-tegra.2",    NULL,        69, 0x1bc,    0x31E,    52000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* scales with voltage */
+    PERIPH_CLK("sdmmc4",    "sdhci-tegra.3",    NULL,        15, 0x164,    0x31E,    52000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* scales with voltage */
+    PERIPH_CLK("vcp",       "tegra-avp",        "vcp",       29,     0,    0x31E,   250000000, mux_clk_m,                      0),
+    PERIPH_CLK("bsea",      "tegra-avp",        "bsea",      62,     0,    0x31E,   250000000, mux_clk_m,                      0),
+    PERIPH_CLK("bsev",      "tegra-aes",        "bsev",      63,     0,    0x31E,   250000000, mux_clk_m,                      0),
+    PERIPH_CLK("vde",       "tegra-avp",        "vde",       61, 0x1c8,    0x31E,   250000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* scales with voltage and process_id */
+    PERIPH_CLK("csite",     "csite",            NULL,        73, 0x1d4,    0x31E,   144000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* max rate ??? */
+    /* FIXME: what is la? */
+    PERIPH_CLK("la",        "la",               NULL,        76, 0x1f8,    0x31E,    26000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71),
+    PERIPH_CLK("owr",       "tegra_w1",         NULL,        71, 0x1cc,    0x31E,    26000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB),
+    PERIPH_CLK("nor",       "tegra-nor",        NULL,        42, 0x1d0,    0x31E,    92000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71), /* requires min voltage */
+    PERIPH_CLK("mipi",      "mipi",             NULL,        50, 0x174,    0x31E,    60000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U71 | PERIPH_ON_APB), /* scales with voltage */
+    PERIPH_CLK("i2c1",      "tegra-i2c.0",      "div-clk",   12, 0x124,    0x31E,    26000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U16 | PERIPH_ON_APB),
+    PERIPH_CLK("i2c2",      "tegra-i2c.1",      "div-clk",   54, 0x198,    0x31E,    26000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U16 | PERIPH_ON_APB),
+    PERIPH_CLK("i2c3",      "tegra-i2c.2",      "div-clk",   67, 0x1b8,    0x31E,    26000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U16 | PERIPH_ON_APB),
+    PERIPH_CLK("dvc",       "tegra-i2c.3",      "div-clk",   47, 0x128,    0x31E,    26000000, mux_pllp_pllc_pllm_clkm,        MUX | DIV_U16 | PERIPH_ON_APB),
+    PERIPH_CLK("i2c1-fast", "tegra-i2c.0",      "fast-clk",   0,     0,    0x31E,   108000000, mux_pllp_out3,                  PERIPH_NO_ENB),
+    PERIPH_CLK("i2c2-fast", "tegra-i2c.1",      "fast-clk",   0,     0,    0x31E,   108000000, mux_pllp_out3,                  PERIPH_NO_ENB),
+    PERIPH_CLK("i2c3-fast", "tegra-i2c.2",      "fast-clk",   0,     0,    0x31E,   108000000, mux_pllp_out3,                  PERIPH_NO_ENB),
+    PERIPH_CLK("dvc-fast",  "tegra-i2c.3",      "fast-clk",   0,     0,    0x31E,   108000000, mux_pllp_out3,                  PERIPH_NO_ENB),
+    PERIPH_CLK("uarta",     "tegra_uart.0",     NULL,         6, 0x178,    0x31E,   600000000, mux_pllp_pllc_pllm_clkm,        MUX | PERIPH_ON_APB),
+    PERIPH_CLK("uartb",     "tegra_uart.1",     NULL,         7, 0x17c,    0x31E,   600000000, mux_pllp_pllc_pllm_clkm,        MUX | PERIPH_ON_APB),
+    PERIPH_CLK("uartc",     "tegra_uart.2",     NULL,        55, 0x1a0,    0x31E,   600000000, mux_pllp_pllc_pllm_clkm,        MUX | PERIPH_ON_APB),
+    PERIPH_CLK("uartd",     "tegra_uart.3",     NULL,        65, 0x1c0,    0x31E,   600000000, mux_pllp_pllc_pllm_clkm,        MUX | PERIPH_ON_APB),
+    PERIPH_CLK("uarte",     "tegra_uart.4",     NULL,        66, 0x1c4,    0x31E,   600000000, mux_pllp_pllc_pllm_clkm,        MUX | PERIPH_ON_APB),
+    PERIPH_CLK("3d",        "3d",               NULL,        24, 0x158,    0x31E,   300000000, mux_pllm_pllc_pllp_plla,        MUX | DIV_U71 | PERIPH_MANUAL_RESET), /* scales with voltage and process_id */
+    PERIPH_CLK("2d",        "2d",               NULL,        21, 0x15c,    0x31E,   300000000, mux_pllm_pllc_pllp_plla,        MUX | DIV_U71), /* scales with voltage and process_id */
+    PERIPH_CLK("vi",        "tegra_camera",     "vi",        20, 0x148,    0x31E,   150000000, mux_pllm_pllc_pllp_plla,        MUX | DIV_U71), /* scales with voltage and process_id */
+    PERIPH_CLK("vi_sensor", "tegra_camera",     "vi_sensor", 20, 0x1a8,    0x31E,   150000000, mux_pllm_pllc_pllp_plla,        MUX | DIV_U71 | PERIPH_NO_RESET), /* scales with voltage and process_id */
+    PERIPH_CLK("epp",       "epp",              NULL,        19, 0x16c,    0x31E,   300000000, mux_pllm_pllc_pllp_plla,        MUX | DIV_U71), /* scales with voltage and process_id */
+    PERIPH_CLK("mpe",       "mpe",              NULL,        60, 0x170,    0x31E,   300000000, mux_pllm_pllc_pllp_plla,        MUX | DIV_U71), /* scales with voltage and process_id */
+    PERIPH_CLK("host1x",    "host1x",           NULL,        28, 0x180,    0x31E,   166000000, mux_pllm_pllc_pllp_plla,        MUX | DIV_U71), /* scales with voltage and process_id */
+    PERIPH_CLK("cve",       "cve",              NULL,        49, 0x140,    0x31E,   250000000, mux_pllp_plld_pllc_clkm,        MUX | DIV_U71), /* requires min voltage */
+    PERIPH_CLK("tvo",       "tvo",              NULL,        49, 0x188,    0x31E,   250000000, mux_pllp_plld_pllc_clkm,        MUX | DIV_U71), /* requires min voltage */
+    PERIPH_CLK("hdmi",      "hdmi",             NULL,        51, 0x18c,    0x31E,   600000000, mux_pllp_plld_pllc_clkm,        MUX | DIV_U71), /* requires min voltage */
+    PERIPH_CLK("tvdac",     "tvdac",            NULL,        53, 0x194,    0x31E,   250000000, mux_pllp_plld_pllc_clkm,        MUX | DIV_U71), /* requires min voltage */
+    PERIPH_CLK("disp1",     "tegradc.0",        NULL,        27, 0x138,    0x31E,   600000000, mux_pllp_plld_pllc_clkm,        MUX), /* scales with voltage and process_id */
+    PERIPH_CLK("disp2",     "tegradc.1",        NULL,        26, 0x13c,    0x31E,   600000000, mux_pllp_plld_pllc_clkm,        MUX), /* scales with voltage and process_id */
+    PERIPH_CLK("usbd",      "tegra-udc.0",      NULL,        22,      0,   0x31E,   480000000, mux_clk_m,                      0), /* requires min voltage */
+    PERIPH_CLK("usb2",      "tegra-ehci.1",     NULL,        58,      0,   0x31E,   480000000, mux_clk_m,                      0), /* requires min voltage */
+    PERIPH_CLK("usb3",      "tegra-ehci.2",     NULL,        59,      0,   0x31E,   480000000, mux_clk_m,                      0), /* requires min voltage */
+    PERIPH_CLK("dsia",      "tegradc.0",        "dsia",      48,      0,   0x31E,   500000000, mux_plld_out0,                  0), /* scales with voltage */
+    PERIPH_CLK("dsi1-fixed","tegradc.0",        "dsi-fixed",  0,      0,   0x31E,   108000000, mux_pllp_out3,                  PERIPH_NO_ENB),
+    PERIPH_CLK("dsi2-fixed","tegradc.1",        "dsi-fixed",  0,      0,   0x31E,   108000000, mux_pllp_out3,                  PERIPH_NO_ENB),
+    PERIPH_CLK("csi",       "tegra_camera",     "csi",       52,      0,   0x31E,    72000000, mux_pllp_out3,                  0),
+    PERIPH_CLK("isp",       "tegra_camera",     "isp",       23,      0,   0x31E,   150000000, mux_clk_m,                      0), /* same frequency as VI */
+    PERIPH_CLK("csus",      "tegra_camera",     "csus",      92,      0,   0x31E,   150000000, mux_clk_m,                      PERIPH_NO_RESET),
+    PERIPH_CLK("pex",       NULL,               "pex",       70,      0,   0x31E,    26000000, mux_clk_m,                      PERIPH_MANUAL_RESET),
+    PERIPH_CLK("afi",       NULL,               "afi",       72,      0,   0x31E,    26000000, mux_clk_m,                      PERIPH_MANUAL_RESET),
+    PERIPH_CLK("pcie_xclk", NULL,               "pcie_xclk", 74,      0,   0x31E,    26000000, mux_clk_m,                      PERIPH_MANUAL_RESET),
+    PERIPH_CLK("stat_mon",  "tegra-stat-mon",   NULL,        37,      0,   0x31E,    26000000, mux_clk_m,                      0),
 };
 
 struct clk tegra_list_shared_clks[] = {
