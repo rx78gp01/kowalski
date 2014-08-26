@@ -272,6 +272,9 @@ void die(const char *str, struct pt_regs *regs, int err)
 {
 	struct thread_info *thread = current_thread_info();
 	int ret;
+#if defined(CONFIG_MACH_LGE) && defined(CONFIG_MACH_STAR)
+	unsigned char bootcause[1];
+#endif
 
 	oops_enter();
 
@@ -289,8 +292,8 @@ void die(const char *str, struct pt_regs *regs, int err)
 	add_taint(TAINT_DIE);
 	spin_unlock_irq(&die_lock);
 #if defined(CONFIG_MACH_LGE) && defined(CONFIG_MACH_STAR)
-	unsigned char bootcause[1] = {LGE_NVDATA_RESET_CAUSE_VAL_USER_RESET};
-	lge_nvdata_write(LGE_NVDATA_RESET_CAUSE_OFFSET, bootcause,1);
+	bootcause[0] = LGE_NVDATA_RESET_CAUSE_VAL_USER_RESET;
+	lge_nvdata_write(LGE_NVDATA_RESET_CAUSE_OFFSET, bootcause, 1);
 #endif
 	oops_exit();
 
