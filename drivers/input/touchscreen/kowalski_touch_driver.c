@@ -38,6 +38,7 @@
 
 #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
 #include <linux/input/doubletap2wake.h>
+#include <linux/wakelock.h>
 #endif
 
 #define init_MUTEX_LOCKED(sem)    sema_init(sem, 0)
@@ -98,8 +99,8 @@ static const kowalski_touch_device_capabilities synaptics_capabilities =
     0,    //IsFingersSupported
     0,    //XMinPosition
     0,    //YMinPosition
-    LGE_TOUCH_RESOLUTION_X-1,    //XMaxPosition
-    LGE_TOUCH_RESOLUTION_Y-1,    //YMaxPosition
+    LGE_TOUCH_RESOLUTION_X - 1,    //XMaxPosition
+    LGE_TOUCH_RESOLUTION_Y - 1,    //YMaxPosition
     0,
 };
 
@@ -124,6 +125,7 @@ bool is_irq_already_enabled = false;
 bool touch_irq_wake = 0;
 #ifdef CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE
 #define SHOULD_PREVENT_SLEEP (dt2w_switch == 0)
+static struct wake_lock touch_wake_lock;
 #else
 #define SHOULD_PREVENT_SLEEP (false)
 #endif
@@ -174,12 +176,13 @@ ssize_t touch_gripsuppression_store(struct device *dev, struct device_attribute 
     return count;
 }
 
-DEVICE_ATTR(gripsuppression, 0666, touch_gripsuppression_show, touch_gripsuppression_store);
+DEVICE_ATTR(gripsuppression, 0664, touch_gripsuppression_show, touch_gripsuppression_store);
 
 #endif /* FEATURE_LGE_TOUCH_GRIP_SUPPRESSION */
 
 //Defined
 static irqreturn_t touch_irq_handler(int irq, void *dev_id);
+static irqreturn_t touch_thread_irq_handler(int irq, void *dev_id);
 int task_handler(void *pdata);
 
 #if defined (STAR_FW_VERSION)
@@ -249,7 +252,10 @@ bool synaptics_device_open(synaptics_touch_device* h_touch, struct i2c_client *c
         goto err_synaptics_device_open;
     }
 
-    hTouch->flags       = pdata->irqflags /*| IRQF_NO_SUSPEND | IRQF_ONESHOT*/;
+    hTouch->flags       = pdata->irqflags        // Platform flags
+                            | IRQF_NO_SUSPEND    // This irq shouldn't get disabled during suspend
+                            | IRQF_ONESHOT       // Needed for threaded irqs
+                            | IRQF_FORCE_RESUME; // Force resume, so that we get no lock
     hTouch->power       = pdata->power;
     hTouch->gpio        = pdata->gpio;
     hTouch->irq_gpio    = client->irq;
@@ -331,7 +337,7 @@ bool input_device_open(synaptics_touch_device* hTouch)
     input_set_abs_params(input_dev, ABS_MT_WIDTH_MAJOR, 0, hTouch->caps.MaxNumberOfWidthReported, 0, 0);
 
     if(unlikely(!input_register_device(input_dev) == 0)) {
-        DEBUG_MSG(ERR, "[TOUCH] ERROR : %s[%u] %s\n", __FUNCTION__, __LINE__, "");
+        DEBUG_MSG(ERR, "[TOUCH] ERROR : %s[%u] %s\n", __FUNCTION__, __LINE__, "Failed to register input device!");
         goto err_input_device_open;
     }
     return true;
@@ -462,6 +468,7 @@ bool synaptics_task_is_stopped(synaptics_touch_device* hTouch)
 void interrupt_close(synaptics_touch_device* hTouch)
 {
     if(!is_irq_already_free) {
+        synaptics_disable_irq_wake(hTouch);
         free_irq(hTouch->irq_gpio, (void*)hTouch->touch);
     }
 }
@@ -473,8 +480,8 @@ bool interrupt_open(synaptics_touch_device* hTouch)
     init_MUTEX_LOCKED(&hTouch->sem);
     
     ret = request_threaded_irq(hTouch->irq_gpio, //Interrupt line to allocate
-                               NULL, //Function to be called when the IRQ occurs
-                               touch_irq_handler,   //Function called from the irq handler
+                               touch_irq_handler, //Function to be called when the IRQ occurs
+                               touch_thread_irq_handler,   //Function called from the irq handler
                                hTouch->flags, //Interrupt type flags
                                LGE_TOUCH_NAME, //An ascii name for the claiming device
                                (void*)hTouch->touch); //A cookie passed back to the handler function
@@ -495,6 +502,7 @@ bool interrupt_enable(synaptics_touch_device* hTouch)
 {
     if(!is_irq_already_enabled) {
         enable_irq(hTouch->irq_gpio);
+        synaptics_enable_irq_wake(hTouch);
         is_irq_already_enabled = true;
     }
     
@@ -943,9 +951,9 @@ static u8 synaptics_get_fw_version(struct i2c_client *client)
 static unsigned long ExtractLongFromHeader(const u8 *SynaImage)  // Endian agnostic 
 {
     return((unsigned long)SynaImage[0] +
-            (unsigned long)SynaImage[1]*0x100 +
-            (unsigned long)SynaImage[2]*0x10000 +
-            (unsigned long)SynaImage[3]*0x1000000);
+           (unsigned long)SynaImage[1] * 0x100 +
+           (unsigned long)SynaImage[2] * 0x10000 +
+           (unsigned long)SynaImage[3] * 0x1000000);
 }
 
 static void CalculateChecksum(u16 *data, u16 len, u32 *dataBlock)
@@ -1253,11 +1261,36 @@ static void remove_touch_object(touch_driver_data *touch)
     if(touch) kfree(touch);
 }
 
+/* touch_irq_handler
+ *
+ * When Interrupt occurs, it will be called before touch_thread_irq_handler.
+ *
+ * return
+ * IRQ_HANDLED: touch_thread_irq_handler will not be called.
+ * IRQ_WAKE_THREAD: touch_thread_irq_handler will be called.
+ */
 static irqreturn_t touch_irq_handler(int irq, void *dev_id)
 {
 	touch_driver_data *touch = (touch_driver_data*)dev_id;
+
+	if (unlikely(touch == NULL))
+		return IRQ_HANDLED;
+
+	return IRQ_WAKE_THREAD;
+}
+
+/* touch_thread_irq_handler
+ *
+ * 1. disable irq.
+ * 2. enqueue the new work.
+ * 3. enalbe irq.
+ */
+static irqreturn_t touch_thread_irq_handler(int irq, void *dev_id)
+{
+    touch_driver_data *touch = (touch_driver_data*)dev_id;
 	
-	//JUMP
+	wake_lock_timeout(&touch_wake_lock, msecs_to_jiffies(1000));
+	
 	interrupt_disable(&touch->handle_touch);
     interrupt_start(&touch->handle_touch);
 
@@ -1282,6 +1315,7 @@ int task_handler(void *pdata)
 
     while(1) {
         printk("[TOUCH] %s() called and waiting for interrupt\n", __FUNCTION__);
+        wake_unlock(&touch_wake_lock);
         if(unlikely(interrupt_wait(hTouch) == 0)) {
             DEBUG_MSG(ERR, "[TOUCH] ERROR : %s[%u] %s\n", __FUNCTION__, __LINE__, "");
             goto err_in_while;
@@ -1354,7 +1388,7 @@ int task_handler(void *pdata)
         finger_data.prev_button = finger_data.curr_button;
 err_in_while:
         if(unlikely(interrupt_enable(hTouch) == 0)) {
-            DEBUG_MSG(ERR, "[TOUCH] ERROR : %s[%u] %s\n", __FUNCTION__, __LINE__, "");
+            printk("[TOUCH] ERROR : %s[%u] %s\n", __FUNCTION__, __LINE__, "Failed to enable interrupt");
             goto err_task_handler;
         }
     }
@@ -1368,6 +1402,8 @@ static int touch_probe(struct i2c_client *client, const struct i2c_device_id *id
 {
     synaptics_touch_device* hTouch = NULL;
     touch_driver_data *touch = NULL;
+
+    wake_lock_init(&touch_wake_lock, WAKE_LOCK_SUSPEND, "touch_irq");
 
     if(unlikely(create_touch_object(&touch) == 0)) {
         DEBUG_MSG(ERR, "[TOUCH] ERROR : %s[%u] %s\n", __FUNCTION__, __LINE__, "");
@@ -1451,6 +1487,9 @@ static int touch_remove(struct i2c_client *client)
     interrupt_close(&touch->handle_touch);
     synaptics_device_close(&touch->handle_touch);
     remove_touch_object(touch);
+    
+    wake_lock_destroy(&touch_wake_lock);
+    
     return 0;
 }
 
