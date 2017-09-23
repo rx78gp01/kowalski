@@ -520,7 +520,10 @@ struct ext4_new_group_data {
 #define EXT4_GET_BLOCKS_PUNCH_OUT_EXT		0x0020
 	/* Don't normalize allocation size (used for fallocate) */
 #define EXT4_GET_BLOCKS_NO_NORMALIZE		0x0040
-
+	/* Write zeros to newly created written extents */
+#define EXT4_GET_BLOCKS_ZERO			0x0200
+#define EXT4_GET_BLOCKS_CREATE_ZERO		(EXT4_GET_BLOCKS_CREATE |\
+					EXT4_GET_BLOCKS_ZERO)
 /*
  * Flags used by ext4_free_blocks
  */
