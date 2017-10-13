@@ -1481,6 +1481,9 @@ wl_run_escan(struct wl_priv *wl, struct net_device *ndev,
 							/* allows only supported channel on
 							*  current reguatory
 							*/
+						if (n_nodfs >= num_chans)
+							break;
+							
 							if (channel == (dtoh32(list->element[j])))
 								default_chan_list[n_nodfs++] =
 									channel;
@@ -5589,6 +5592,11 @@ wl_notify_pfn_status(struct wl_priv *wl, struct net_device *ndev,
 	const wl_event_msg_t *e, void *data)
 {
 	WL_ERR((">>> PNO Event\n"));
+	
+	if (!data) {
+		WL_ERR(("Data is NULL!\n"));
+		return 0;
+	}
 
 #ifndef WL_SCHED_SCAN
 	mutex_lock(&wl->usr_sync);
