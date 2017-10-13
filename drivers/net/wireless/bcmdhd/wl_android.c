@@ -565,7 +565,6 @@ wl_handle_private_cmd(struct net_device *net, char *command, u32 buf_size)
 	else if (strnicmp(command, CMD_LINKSPEED, strlen(CMD_LINKSPEED)) == 0) {
 		bytes_written = wl_android_get_link_speed(net, command, priv_cmd.total_len);
 	}
-#ifdef PKT_FILTER_SUPPORT
 	else if (strnicmp(command, CMD_RXFILTER_START, strlen(CMD_RXFILTER_START)) == 0) {
 		bytes_written = net_os_set_packet_filter(net, 1);
 	}
@@ -580,7 +579,6 @@ wl_handle_private_cmd(struct net_device *net, char *command, u32 buf_size)
 		int filter_num = *(command + strlen(CMD_RXFILTER_REMOVE) + 1) - '0';
 		bytes_written = net_os_rxfilter_add_remove(net, FALSE, filter_num);
 	}
-#endif /* PKT_FILTER_SUPPORT */
 	else if (strnicmp(command, CMD_BTCOEXSCAN_START, strlen(CMD_BTCOEXSCAN_START)) == 0) {
 		/* TBD: BTCOEXSCAN-START */
 	}
@@ -591,14 +589,12 @@ wl_handle_private_cmd(struct net_device *net, char *command, u32 buf_size)
 #ifdef WL_CFG80211
 		bytes_written = wl_cfg80211_set_btcoex_dhcp(net, command);
 #else
-#ifdef PKT_FILTER_SUPPORT
 		uint mode = *(command + strlen(CMD_BTCOEXMODE) + 1) - '0';
 
 		if (mode == 1)
-			net_os_enable_packet_filter(net, 0); /* DHCP starts */
+			net_os_set_packet_filter(net, 0); /* DHCP starts */
 		else
-			net_os_enable_packet_filter(net, 1); /* DHCP ends */
-#endif /* PKT_FILTER_SUPPORT */
+			net_os_set_packet_filter(net, 1); /* DHCP ends */
 #endif /* WL_CFG80211 */
 	}
 	else if (strnicmp(command, CMD_SETSUSPENDOPT, strlen(CMD_SETSUSPENDOPT)) == 0) {
@@ -626,7 +622,7 @@ wl_handle_private_cmd(struct net_device *net, char *command, u32 buf_size)
 #ifdef PNO_SUPPORT
 #ifndef WL_SCHED_SCAN
 	else if (strnicmp(command, CMD_PNOSSIDCLR_SET, strlen(CMD_PNOSSIDCLR_SET)) == 0) {
-		bytes_written = dhd_dev_pno_stop_for_ssid(net);
+		bytes_written = dhd_dev_pno_reset(net);
 	}
 #ifndef WL_SCHED_SCAN
 	else if (strnicmp(command, CMD_PNOSETUP_SET, strlen(CMD_PNOSETUP_SET)) == 0) {
@@ -634,8 +630,8 @@ wl_handle_private_cmd(struct net_device *net, char *command, u32 buf_size)
 	}
 #endif /* !WL_SCHED_SCAN */
 	else if (strnicmp(command, CMD_PNOENABLE_SET, strlen(CMD_PNOENABLE_SET)) == 0) {
-		int enable = *(command + strlen(CMD_PNOENABLE_SET) + 1) - '0';
-		bytes_written = (enable)? 0 : dhd_dev_pno_stop_for_ssid(net);
+		uint pfn_enabled = *(command + strlen(CMD_PNOENABLE_SET) + 1) - '0';
+		bytes_written = dhd_dev_pno_enable(net, pfn_enabled);
 	}
 #endif
 #endif /* PNO_SUPPORT */
