@@ -15,7 +15,7 @@ struct mnt_namespace {
 };
 
 struct proc_mounts {
-	struct seq_file m; /* must be the first element */
+	struct seq_file m;
 	struct mnt_namespace *ns;
 	struct path root;
 };

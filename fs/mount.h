@@ -24,3 +24,4 @@ static inline int is_mounted(struct vfsmount *mnt)
 
 extern struct mount *__lookup_mnt(struct vfsmount *, struct dentry *, int);
 
+#define proc_mounts(p) (container_of((p), struct proc_mounts, m))
