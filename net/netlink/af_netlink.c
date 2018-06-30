@@ -156,8 +156,6 @@ static void netlink_sock_destruct(struct sock *sk)
 	if (nlk->cb) {
 		if (nlk->cb->done)
 			nlk->cb->done(nlk->cb);
-
-		module_put(nlk->cb->module);
 		netlink_destroy_callback(nlk->cb);
 	}
 
@@ -1664,7 +1662,6 @@ static int netlink_dump(struct sock *sk)
 	struct netlink_callback *cb;
 	struct sk_buff *skb = NULL;
 	struct nlmsghdr *nlh;
-	struct module *module;
 	int len, err = -ENOBUFS;
 	int alloc_size;
 
@@ -1714,10 +1711,8 @@ static int netlink_dump(struct sock *sk)
 	if (cb->done)
 		cb->done(cb);
 	nlk->cb = NULL;
-	module = cb->module;
 	mutex_unlock(nlk->cb_mutex);
 
-	module_put(module);
 	netlink_destroy_callback(cb);
 	return 0;
 
@@ -1727,9 +1722,9 @@ errout_skb:
 	return err;
 }
 
-int __netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
-			 const struct nlmsghdr *nlh,
-			 struct netlink_dump_control *control)
+int netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
+		       const struct nlmsghdr *nlh,
+		       struct netlink_dump_control *control)
 {
 	struct netlink_callback *cb;
 	struct sock *sk;
@@ -1743,7 +1738,6 @@ int __netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
 	cb->dump = control->dump;
 	cb->done = control->done;
 	cb->nlh = nlh;
-	cb->module = control->module;
 	cb->min_dump_alloc = control->min_dump_alloc;
 	atomic_inc(&skb->users);
 	cb->skb = skb;
@@ -1754,28 +1748,19 @@ int __netlink_dump_start(struct sock *ssk, struct sk_buff *skb,
 		return -ECONNREFUSED;
 	}
 	nlk = nlk_sk(sk);
-
-	mutex_lock(nlk->cb_mutex);
 	/* A dump is in progress... */
+	mutex_lock(nlk->cb_mutex);
 	if (nlk->cb) {
 		mutex_unlock(nlk->cb_mutex);
 		netlink_destroy_callback(cb);
-		ret = -EBUSY;
-		goto out;
+		sock_put(sk);
+		return -EBUSY;
 	}
-	/* add reference of module which cb->dump belongs to */
-	if (!try_module_get(cb->module)) {
-		mutex_unlock(nlk->cb_mutex);
-		netlink_destroy_callback(cb);
-		ret = -EPROTONOSUPPORT;
-		goto out;
-	}
-
 	nlk->cb = cb;
 	mutex_unlock(nlk->cb_mutex);
 
 	ret = netlink_dump(sk);
-out:
+
 	sock_put(sk);
 
 	if (ret)
@@ -1786,7 +1771,7 @@ out:
 	 */
 	return -EINTR;
 }
-EXPORT_SYMBOL(__netlink_dump_start);
+EXPORT_SYMBOL(netlink_dump_start);
 
 void netlink_ack(struct sk_buff *in_skb, struct nlmsghdr *nlh, int err)
 {
