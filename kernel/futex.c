@@ -1862,6 +1862,9 @@ static void futex_wait_queue_me(struct futex_hash_bucket *hb, struct futex_q *q,
 			timeout->task = NULL;
 	}
 
+	if (nr_wake < 0 || nr_requeue < 0)
+		return -EINVAL;
+
 	/*
 	 * If we have been removed from the hash list, then another task
 	 * has tried to wake us, and we can skip the call to schedule().
