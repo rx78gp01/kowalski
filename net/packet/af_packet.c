@@ -3632,7 +3632,6 @@ static int packet_set_ring(struct sock *sk, union tpacket_req_u *req_u,
 	rb_queue = tx_ring ? &sk->sk_write_queue : &sk->sk_receive_queue;
 
 	err = -EBUSY;
-	lock_sock(sk);
 	if (!closing) {
 		if (atomic_read(&po->mapped))
 			goto out;
