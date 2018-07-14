@@ -868,9 +868,12 @@ static int inet_diag_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
 			    inet_diag_bc_audit(nla_data(attr), nla_len(attr)))
 				return -EINVAL;
 		}
-
-		return netlink_dump_start(sdiagnl, skb, nlh,
-					  inet_diag_dump, NULL, 0);
+		{
+			struct netlink_dump_control c = {
+				.dump = inet_diag_dump_compat,
+			};
+			return netlink_dump_start(sock_diag_nlsk, skb, nlh, &c);
+		}
 	}
 
 	return inet_diag_get_exact(skb, nlh);
