@@ -1090,7 +1090,7 @@ int netlink_broadcast_filtered(struct sock *ssk, struct sk_buff *skb, u32 pid,
 
 	if (info.delivered) {
 		if (info.congested && (allocation & __GFP_WAIT))
-			yield();
+			cond_resched();
 		return 0;
 	}
 	return -ESRCH;
@@ -1467,7 +1467,7 @@ static int netlink_recvmsg(struct kiocb *kiocb, struct socket *sock,
 	if (nlk->cb && atomic_read(&sk->sk_rmem_alloc) <= sk->sk_rcvbuf / 2) {
 		ret = netlink_dump(sk);
 		if (ret) {
-			sk->sk_err = ret;
+			sk->sk_err = -ret;
 			sk->sk_error_report(sk);
 		}
 	}
